@@ -1,0 +1,97 @@
+body, body * {
+  font-family: 'Rubik', sans-serif !important;
+}
+
+button {
+  text-transform: unset !important;
+}
+
+p {
+  margin-bottom: 0 !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Typography */
+.pcs-title {
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 28px;
+}
+
+.pcs-subtitle {
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.pcs-subtitle-3 {
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.pcs-headline {
+  font-weight: normal;
+  font-size: 28px;
+  line-height: 32px;
+  text-align: unset;
+}
+
+.pcs-page-subtitle {
+  font-weight: 300;
+  font-size: 20px;
+  line-height: 24px;
+  color: #8D8D8D;
+  text-align: unset;
+}
+
+.pcs-link {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+}
+/* Old Code */
+
+.header {
+    padding: 2%;
+    background-color: rgb(128, 0, 107);
+    font-size: 50px;
+    text-align: center;
+    width: 100%;
+    color: white;
+}
+
+.footer {
+  padding: 2%;
+    background-color: red;
+    font-size: 50px;
+    text-align: center;
+    width: 100%
+}
+
+.dashboard {
+  padding: 3% 1%;
+}
+
+h1 {
+  text-align: center;
+}
+
+.display-board {
+  width: 100%;
+  background-color: rgba(0, 119, 128, 0.719);
+  padding: 5%;
+}
+
+.number {
+  color: red;
+  font-size: 75px;
+  text-align: center;
+}
+
+.mrgnbtm {
+  margin-top: 20px;
+}
