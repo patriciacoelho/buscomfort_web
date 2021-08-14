@@ -4,6 +4,7 @@ body, body * {
 
 button {
   text-transform: unset !important;
+  letter-spacing: initial !important;
 }
 
 p {
@@ -24,7 +25,7 @@ p {
 .pcs-subtitle {
   font-weight: normal;
   font-size: 16px;
-  line-height: 24px;
+  line-height: 20px;
 }
 
 .pcs-subtitle-3 {
@@ -53,6 +54,18 @@ p {
   font-size: 14px;
   line-height: 24px;
 }
+
+.pcs-caption {
+  font-size: 12px;
+  line-height: 14px;
+  text-transform: uppercase;
+  color: #8D8D8D;
+}
+
+.dark--text {
+  color: #8D8D8D;
+}
+
 /* Old Code */
 
 .header {

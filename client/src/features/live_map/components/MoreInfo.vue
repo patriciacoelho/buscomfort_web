@@ -1,6 +1,6 @@
 <template>
 	<v-sheet
-		class="pa-4"
+		class="side-sheet pa-4"
 		color="white"
 		height="100%"
 		width="395"
@@ -11,7 +11,7 @@
 		<v-row class="justify-space-between">
 			<v-col>
 				<h2 class="primary--text pcs-title">ÔNIBUS U742-09</h2>
-				<h4 class="pcs-subtitle-3">
+				<h4 class="pcs-subtitle-3 my-1 side-sheet__subtitle">
 					CAMPUS JUAZEIRO --> CAMPUS CCA (Av. Sete de Setembro)
 				</h4>
 				<v-divider class="my-4" />
@@ -23,7 +23,7 @@
 					v-if="moduleStatus === 'no-signal'"
 					class="text-center"
 				>
-					<no-signal-icon />
+					<no-signal-icon style="width: 120px;" />
 					<p style="color: #DC3545;">
 						Não foi possível realizar comunicação com este ônibus. O módulo está offline.
 					</p>
@@ -32,40 +32,59 @@
 					v-else-if="moduleStatus === 'in-yard'"
 					class="text-center"
 				>
-					<in-yard-icon />
+					<in-yard-icon style="width: 120px;" />
 					<p style="color: #8D8D8D;">
 						Este ônibus se encontra na garagem, não está em operação no momento.
 					</p>
 				</div>
 				<div v-else>
-					<v-row>
+					<v-row class="justify-center align-center">
 						<v-col cols="3">
 							<comfort-level-icon style="height: 70px;" />
 						</v-col>
-						<v-col>
-							<p>NÍVEL 3</p>
-							<p>Pouco desconforto</p>
-							<p>Níveis altos de temperatura e vibração</p>
+						<v-col cols="7">
+							<p class="pcs-caption">NÍVEL 3</p>
+							<p
+								class="pcs-subtitle my-1 font-weight-bold"
+								style="color: #B79229;"
+							>
+								Pouco desconforto
+							</p>
+							<p class="primary--text pcs-subtitle font-weight-light">
+								Níveis altos de temperatura e vibração
+							</p>
 						</v-col>
 					</v-row>
 					<div>
-						<p>
+						<p class="dark--text pcs-subtitle my-3">
 							Ambiente
 						</p>
 						<v-row>
-							<v-col cols="3">
+							<v-col
+								class="text-center"
+								cols="3"
+							>
 								<temperature-sensor-icon style="height: 40px;" />
 								<p>32 ºC</p>
 							</v-col>
-							<v-col cols="3">
+							<v-col
+								class="text-center"
+								cols="3"
+							>
 								<moisture-icon style="height: 40px;" />
 								<p>45 %rH</p>
 							</v-col>
-							<v-col cols="3">
+							<v-col
+								class="text-center"
+								cols="3"
+							>
 								<noise-sensor-icon style="height: 40px;" />
 								<p>60 db(A)</p>
 							</v-col>
-							<v-col cols="3">
+							<v-col
+								class="text-center"
+								cols="3"
+							>
 								<jerk-meter-icon style="height: 40px;" />
 								<p>1,6 m/s³</p>
 							</v-col>
@@ -73,7 +92,7 @@
 					</div>
 					<v-divider class="my-3" />
 					<div>
-						<p>
+						<p class="dark--text pcs-subtitle my-3">
 							Localização
 						</p>
 						<p>
@@ -82,28 +101,29 @@
 						<p>
 							Petrolina - PE, 56302-971
 						</p>
-						<p>
+						<p class="pcs-subtitle-3 dark--text">
 							-9.400000, -40.500000
 						</p>
 					</div>
 					<v-divider class="my-3" />
 					<div>
-						<p>
+						<p class="dark--text pcs-subtitle my-3">
 							Movimento
 						</p>
-						<p>
+						<p class="pcs-caption side-sheet__caption">
 							30.0 km/h em direção a leste
 						</p>
 						<p>
 							Trecho entre a Catedral de Petrolina e a Auto Escola Petrolina
 						</p>
-						<p>
+						<p class="pcs-subtitle-3 dark--text">
 							Próxima parada a 3 min
 						</p>
 					</div>
 				</div>
 				<v-row justify="center" class="mt-auto">
 					<v-btn
+						class="my-4 px-8"
 						rounded
 						color="primary"
 						dark
@@ -150,3 +170,15 @@ export default {
 	}
 };
 </script>
+
+<style lang="scss" scoped>
+.side-sheet {
+	&__subtitle {
+		color: #4F4F4F;
+	}
+
+	&__caption {
+		text-transform: none;
+	}
+}
+</style>
