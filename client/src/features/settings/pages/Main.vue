@@ -13,6 +13,7 @@
 					rounded
 					color="primary"
 					dark
+					@click="redirectToForm"
 				>
 					<box-icon class="mr-2" name="plus" color="white" />
 					Adicionar ônibus
@@ -193,6 +194,10 @@ export default {
 	},
 
 	methods: {
+		redirectToForm() {
+			this.$router.push('/configuracoes/novo');
+		},
+
 		test() {
 			console.log('eia a som eu');
 		},
