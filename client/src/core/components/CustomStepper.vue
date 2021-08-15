@@ -47,7 +47,7 @@ export default {
 			required: true,
 		},
 		steps: {
-			type: Object,
+			type: Array,
 			default: () => {},
 			required: true,
 		},
