@@ -105,21 +105,6 @@
 							-9.400000, -40.500000
 						</p>
 					</div>
-					<v-divider class="my-3" />
-					<div>
-						<p class="dark--text pcs-subtitle my-3">
-							Movimento
-						</p>
-						<p class="pcs-caption side-sheet__caption">
-							30.0 km/h em direção a leste
-						</p>
-						<p>
-							Trecho entre a Catedral de Petrolina e a Auto Escola Petrolina
-						</p>
-						<p class="pcs-subtitle-3 dark--text">
-							Próxima parada a 3 min
-						</p>
-					</div>
 				</div>
 				<v-row justify="center" class="mt-auto">
 					<v-btn
