@@ -92,12 +92,12 @@
 							/>
 						</template>
 						<template v-slot:subtitle>
-							<p>Rota: {{ item.routeAlias }}</p>
-							<p>Motorista: {{ item.driverName }}</p>
+							<p>{{ item.category }}</p>
+							<p>Placa: {{ item.licensePlate }}</p>
 						</template>
 						<template v-slot:right-slot>
 							<div class="d-flex flex-column">
-								<span>ÚLTIMA TRANSMISSÃO:</span>
+								<span>ÚLTIMA TRANSMISSÃO</span>
 								<p>
 									{{ item.lastShot || '--' }}
 								</p>
@@ -128,27 +128,24 @@ export default {
 			showNoSignalModules: true,
 			items: [
 				{
-					title: 'ÔNIBUS N7511-10',
+					title: 'N7511-10',
 					status: 'watching',
-					routeAlias: 'Term. São Mateus',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
+					licensePlate: 'GSV4H86',
+					category: 'Ônibus Padron',
 					lastShot: '14:53:04',
 				},
 				{
-					title: 'ÔNIBUS NB519-12',
+					title: 'NB519-12',
 					status: 'no-signal',
-					routeAlias: 'Consolação',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
+					licensePlate: 'JKP5E58',
+					category: 'Ônibus circular',
 					lastShot: '11:31:20',
 				},
 				{
-					title: 'ÔNIBUS M7190-05',
+					title: 'M7190-05',
 					status: 'in-yard',
-					routeAlias: 'Itaquera',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
+					licensePlate: 'JKR24S8',
+					category: 'Ônibus articulado',
 					lastShot: '06:19:09',
 				},
 			],
