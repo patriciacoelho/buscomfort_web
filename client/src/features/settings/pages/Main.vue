@@ -95,9 +95,7 @@
 				>
 					<list-item
 						:title="item.title"
-						expandable
 						@click="test"
-						@action-trigger="test"
 					>
 						<template v-slot:icon>
 							<v-img
@@ -107,13 +105,8 @@
 							/>
 						</template>
 						<template v-slot:subtitle>
-							<p>Rota: {{ item.routeAlias }}</p>
-							<p>Motorista: {{ item.driverName }}</p>
-						</template>
-						<template v-slot:append-details>
-							<p>Detalhes da rota: {{ item.routeSpec }}</p>
-							<p>Duração da rota: {{ item.estimatedDuration }}</p>
-							<p>UID do módulo embarcado:  {{ item.uid }}</p>
+							<p>{{ item.category }}</p>
+							<p>Placa: {{ item.licensePlate }}</p>
 						</template>
 						<template v-slot:right-slot>
 							<div class="d-flex flex-column">
@@ -128,9 +121,6 @@
 									</p>
 								</div>
 							</div>
-						</template>
-						<template v-slot:action>
-							EDITAR INFORMAÇÕES
 						</template>
 					</list-item>
 				</div>
@@ -157,35 +147,26 @@ export default {
 			showNoSignalModules: true,
 			items: [
 				{
-					title: 'ÔNIBUS N7511-10',
+					title: 'N7511-10',
+					licensePlate: 'GSV4H86',
+					category: 'Ônibus Padron',
 					status: 'watching',
-					routeAlias: 'Term. São Mateus',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
-					estimatedDuration: '45 minutos',
-					uid: '0042',
 					networkCode: '0020',
 					networkId: '243',
 				},
 				{
-					title: 'ÔNIBUS NB519-12',
+					title: 'NB519-12',
+					licensePlate: 'JKP5E58',
+					category: 'Ônibus circular',
 					status: 'no-signal',
-					routeAlias: 'Consolação',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
-					estimatedDuration: '45 minutos',
-					uid: '0042',
 					networkCode: '0020',
 					networkId: '127',
 				},
 				{
-					title: 'ÔNIBUS M7190-05',
+					title: 'M7190-05',
+					licensePlate: 'JKR24S8',
+					category: 'Ônibus articulado',
 					status: 'in-yard',
-					routeAlias: 'Itaquera',
-					routeSpec: 'Via Av. Sapopemba (10 paradas)',
-					driverName: 'Marcus Luiz',
-					estimatedDuration: '45 minutos',
-					uid: '0042',
 					networkCode: '0020',
 					networkId: '042',
 				},
