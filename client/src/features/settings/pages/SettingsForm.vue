@@ -1,9 +1,10 @@
 <template>
 	<v-col
 		class="pa-0"
-		cols="9"
+		cols="12"
 	>
 		<page-header
+			class="col col-9"
 			title="Configurações dos ônibus"
 			subtitle="Insira as informações a serem editadas/cadastradas e depois clique em salvar"
 		/>
@@ -11,225 +12,104 @@
 			<v-col cols="12">
 				<custom-stepper v-model="currentStep" :steps="steps">
 					<template v-slot:step-1>
-						<v-row class="mt-3">
-							<v-col cols="8">
-								<v-text-field
-									label="Identificação do ônibus"
-									placeholder="Insira um código de identificação para o ônibus"
-									persistent-placeholder
-									hide-details
-									outlined
-								>
-									<template v-slot:append>
-										<v-tooltip top>
-											<template v-slot:activator="{ on, attrs }">
-												<box-icon
-													class="cursor-pointer"
-													name="help-circle"
-													color="#6A7580"
-													v-bind="attrs"
-													v-on="on"
-												/>
-											</template>
-											<span>Nome pelo qual o ônibus será identificado no sistema</span>
-										</v-tooltip>
-									</template>
-								</v-text-field>
-							</v-col>
-						</v-row>
-						<v-row class="">
-							<v-col cols="9">
-								<v-text-field
-									label="Descrição da rota"
-									placeholder="Insira uma descrição para a rota"
-									persistent-placeholder
-									hide-details
-									outlined
-								>
-									<template v-slot:append>
-										<v-tooltip top>
-											<template v-slot:activator="{ on, attrs }">
-												<box-icon
-													class="cursor-pointer"
-													name="help-circle"
-													color="#6A7580"
-													v-bind="attrs"
-													v-on="on"
-												/>
-											</template>
-											<span>Descrição da rota que ônibus faz. Geralmente presente no letreiro.</span>
-										</v-tooltip>
-									</template>
-								</v-text-field>
-							</v-col>
-						</v-row>
-						<v-row class="">
-							<v-col cols="9">
-								<v-text-field
-									label="Especificação da rota"
-									placeholder="Insira a especificação para a rota"
-									persistent-placeholder
-									hide-details
-									outlined
-								>
-									<template v-slot:append>
-										<v-tooltip top>
-											<template v-slot:activator="{ on, attrs }">
-												<box-icon
-													class="cursor-pointer"
-													name="help-circle"
-													color="#6A7580"
-													v-bind="attrs"
-													v-on="on"
-												/>
-											</template>
-											<span>
-												Especifica qual percurso da rota.
-												Geralmente usado para diferenciar ônibus
-												com mesmo destino mas rotas diferentes.
-											</span>
-										</v-tooltip>
-									</template>
-								</v-text-field>
-							</v-col>
-						</v-row>
-						<v-row class="">
-							<v-col cols="9">
-								<v-text-field
-									label="Motorista"
-									placeholder="Insira o nome do motorista designado"
-									persistent-placeholder
-									hide-details
-									outlined
-								/>
-							</v-col>
-						</v-row>
-
-						<v-row class="">
-							<v-col class="ml-auto text-right" cols="3">
-								<v-btn
-									class="px-8"
-									rounded
-									color="primary"
-									dark
-								>
-									Próximo
-								</v-btn>
-							</v-col>
-						</v-row>
+						<general-info-step v-model="form" />
 					</template>
 					<template v-slot:step-2>
-						RouteSettingMap
+						<schedule-step />
 					</template>
 					<template v-slot:step-3>
-						<v-row class="mt-3">
-							<v-col cols="8">
-								<v-text-field
-									label="UID do módulo embarcado"
-									placeholder="Insira o UID do módulo embarcado no ônibus"
-									persistent-placeholder
-									hide-details
-									outlined
-								>
-									<template v-slot:append>
-										<v-tooltip top>
-											<template v-slot:activator="{ on, attrs }">
-												<box-icon
-													class="cursor-pointer"
-													name="help-circle"
-													color="#6A7580"
-													v-bind="attrs"
-													v-on="on"
-												/>
-											</template>
-											<span>
-												UID da placa embarcada no ônibus especificado
-											</span>
-										</v-tooltip>
-									</template>
-								</v-text-field>
-							</v-col>
-						</v-row>
-						<v-row>
-							<v-col cols="8">
-								<v-text-field
-									label="ID de rede do módulo embarcado"
-									placeholder="Insira o NET ID do módulo embarcado no ônibus"
-									persistent-placeholder
-									hide-details
-									outlined
-								>
-									<template v-slot:append>
-										<v-tooltip top>
-											<template v-slot:activator="{ on, attrs }">
-												<box-icon
-													class="cursor-pointer"
-													name="help-circle"
-													color="#6A7580"
-													v-bind="attrs"
-													v-on="on"
-												/>
-											</template>
-											<span>
-												ID da rede mesh configurada para o módulo embarcado
-											</span>
-										</v-tooltip>
-									</template>
-								</v-text-field>
-							</v-col>
-						</v-row>
-
-						<v-row class="">
-							<v-col class="" cols="3">
-								<v-btn
-									class="px-8"
-									rounded
-									color="primary"
-									dark
-									outlined
-								>
-									Voltar
-								</v-btn>
-							</v-col>
-							<v-col class="ml-auto text-right" cols="3">
-								<v-btn
-									class="px-8"
-									rounded
-									color="primary"
-									dark
-								>
-									Salvar
-								</v-btn>
-							</v-col>
-						</v-row>
+						<module-step v-model="form" />
 					</template>
 				</custom-stepper>
 			</v-col>
 		</v-row>
+
+		<v-footer
+			fixed
+			padless
+			color="white"
+			class="footer-container px-16 mt-16"
+		>
+			<v-btn
+				class="px-8 mx-16"
+				rounded
+				color="red"
+				outlined
+				:disabled="loading"
+				@click="handleCancel"
+				@mousedown.prevent
+			>
+				Cancelar
+			</v-btn>
+
+			<div class="d-flex">
+				<v-btn
+					v-if="currentStep > 1"
+					class="px-8 mr-4"
+					rounded
+					color="secondary"
+					outlined
+					:disabled="loading"
+					@click="handleReturn"
+				>
+					Anterior
+				</v-btn>
+				<v-btn
+					class="px-8"
+					rounded
+					color="primary"
+					:disabled="loading"
+					@click="handleAdvance"
+					@mousedown.prevent
+				>
+					<div v-if="loading">
+						<v-progress-circular
+							class="mr-2"
+							indeterminate
+							size="20"
+							width="2"
+							color="grey"
+						/>
+						Carregando...
+					</div>
+					<span v-else>
+						{{ confirmButtonLabel }}
+					</span>
+				</v-btn>
+			</div>
+		</v-footer>
 	</v-col>
 </template>
 
 <script>
 import PageHeader from '../../../core/components/PageHeader.vue';
 import CustomStepper from '../../../core/components/CustomStepper.vue';
+import GeneralInfoStep from '../components/GeneralInfoStep.vue';
+import ModuleStep from '../components/ModuleStep.vue';
+import ScheduleStep from '../components/ScheduleStep.vue';
 
 export default {
 	components: {
 		CustomStepper,
 		PageHeader,
+		GeneralInfoStep,
+		ModuleStep,
+		ScheduleStep,
 	},
 
 	data() {
 		return {
 			currentStep: 1,
+			loading: false,
+			form: {},
 			steps: [
 				{
 					title: 'Informações gerais',
 					name: 'general-step',
 				},
 				{
-					title: 'Definição da rota',
-					name: 'route-step',
+					title: 'Definição das escalas',
+					name: 'schedule-step',
 				},
 				{
 					title: 'Configuração do módulo',
@@ -238,5 +118,43 @@ export default {
 			],
 		};
 	},
+
+	computed: {
+		confirmButtonLabel() {
+			if (this.currentStep === this.steps.length) {
+				return 'Finalizar';
+			}
+			return 'Próximo';
+		},
+	},
+
+	methods: {
+		handleAdvance() {
+			this.loading = true;
+			if (this.currentStep === this.steps.length) {
+				this.loading = false;
+				return;
+			}
+			this.currentStep += 1;
+			this.loading = false;
+		},
+
+		handleReturn() {
+			this.currentStep -= 1;
+		},
+
+		handleCancel() {
+			this.$router.push('/configuracoes');
+		},
+	},
 }
 </script>
+
+<style lang="scss" scoped>
+.footer-container {
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	display: flex;
+	justify-content: space-between;
+}
+</style>
