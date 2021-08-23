@@ -64,6 +64,11 @@ export default {
 				this.currentStep = newValue;
 			}
 		},
+		currentStep(newValue) {
+			if (newValue !== this.value) {
+				this.$emit('input', newValue);
+			}
+		},
 	},
 
 	mounted() {
