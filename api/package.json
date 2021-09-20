@@ -1,7 +1,7 @@
 {
-  "name": "api",
+  "name": "buscomfort_api",
   "version": "1.0.0",
-  "description": "example project react with nodejs",
+  "description": "[...]",
   "main": "server.js",
   "scripts": {
     "start": "node server.bundle.js",
@@ -12,15 +12,15 @@
     "type": "git",
     "url": "git+https://github.com/bbachi/vuejs-nginx-docker.git"
   },
-  "author": "Bhargav Bachina",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bbachi/vuejs-nginx-docker/issues"
-  },
-  "homepage": "https://github.com/bbachi/vuejs-nginx-docker#readme",
+  "author": "Patricia Coelho Silva",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.4",
+    "mongodb": "^4.1.2",
+    "mongoose": "^6.0.3",
     "random-id": "^1.0.4"
   },
   "devDependencies": {
