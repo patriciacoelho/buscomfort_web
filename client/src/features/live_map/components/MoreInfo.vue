@@ -71,7 +71,7 @@
 								class="text-center"
 								cols="3"
 							>
-								<moisture-icon style="height: 40px;" />
+								<humidity-icon style="height: 40px;" />
 								<p>45 %rH</p>
 							</v-col>
 							<v-col
@@ -125,7 +125,7 @@
 import NoSignalIcon from './NoSignalIcon.vue';
 import InYardIcon from './InYardIcon.vue';
 import NoiseSensorIcon from './NoiseSensorIcon.vue';
-import MoistureIcon from './MoistureIcon.vue';
+import HumidityIcon from './HumidityIcon.vue';
 import JerkMeterIcon from './JerkMeterIcon.vue';
 import TemperatureSensorIcon from './TemperatureSensorIcon.vue';
 import ComfortLevelIcon from './ComfortLevelIcon.vue';
@@ -135,7 +135,7 @@ export default {
 		NoSignalIcon,
 		InYardIcon,
 		NoiseSensorIcon,
-		MoistureIcon,
+		HumidityIcon,
 		JerkMeterIcon,
 		TemperatureSensorIcon,
 		ComfortLevelIcon,
