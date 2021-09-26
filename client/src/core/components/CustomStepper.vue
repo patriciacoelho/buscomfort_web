@@ -12,8 +12,7 @@
 					:key="`step-${n + 1}`"
 					:step="n + 1"
 					:complete="currentStep > n + 1"
-					class="custom-stepper__step cursor-pointer"
-					@click="currentStep = n + 1"
+					class="custom-stepper__step"
 				>
 					{{ step.title }}
 				</v-stepper-step>
