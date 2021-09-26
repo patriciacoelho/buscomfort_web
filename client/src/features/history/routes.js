@@ -10,16 +10,15 @@ export const routes = {
 		meta: {
 			title: 'Histórico',
 		},
-		// props: true,
 	},
 	SHOW_HISTORY: {
 		name: 'history.show',
-		path: '/historico/detalhamento', // passar id aqui
+		path: '/historico/detalhamento/:bus',
 		component: ShowHistory,
 		meta: {
 			title: 'Histórico',
 		},
-		// props: true,
+		props: true,
 	},
 };
 
