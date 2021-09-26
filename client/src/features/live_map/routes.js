@@ -1,5 +1,5 @@
 import forEach from 'lodash.foreach';
-import LiveMap from './pages/LiveMap';
+import Main from './pages/Main';
 import Home from './pages/Home';
 
 export const routes = {
@@ -15,7 +15,7 @@ export const routes = {
 	LIVE_MAP: {
 		name: 'live-map.main',
 		path: '/mapa',
-		component: LiveMap,
+		component: Main,
 		meta: {
 			title: 'Mapa',
 		},

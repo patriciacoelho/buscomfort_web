@@ -105,7 +105,8 @@ import {
 	LControl,
 	LMarker,
 } from 'vue2-leaflet';
-import { icon } from "leaflet";
+import { icon } from 'leaflet';
+import BusService from '../../../services/BusService';
 
 export default {
 	components: {
@@ -185,6 +186,7 @@ export default {
 	},
 
 	mounted() {
+		this.getBuses();
 		this.$nextTick(() => {
 			this.overviewMap = this.$refs.overviewMap.mapObject;
 			this.detailMap = this.$refs.detailMap.mapObject;
@@ -192,6 +194,30 @@ export default {
 	},
 
 	methods: {
+		getBuses() {
+			this.markers = [];
+			BusService.getAllGroupedByStatus()
+				.then(response => {
+					const noSignalBuses = response.data['no-signal'];
+					for (const i in noSignalBuses) {
+						this.markers.push({
+							...noSignalBuses[i],
+							position: {
+								lat: -9.413294 + 0.010011*i,
+								lng: -40.512148 + 0.005003*i,
+							},
+							visible: this.showNoSignalMarkers, // se está mostrando os marcadores "sem sinal"
+							icon: icon({
+								iconUrl: 'no-signal-marker.png',
+								iconSize: [45, 45],
+								iconAnchor: [16, 37]
+							}),
+						});
+					}
+				})
+				.catch(e => console.log(e));
+		},
+
 		selectMarker(marker) {
 			this.centerDetailMap = marker.position;
 			this.selectedMarker.push(marker);
