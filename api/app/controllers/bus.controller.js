@@ -3,6 +3,7 @@ require('dotenv/config');
 const { reading, bus } = require('../models');
 const db = require('../models');
 const groupBy = require('lodash.groupby');;
+const mongoose = require('mongoose');
 const Bus = db.bus;
 const Schedule = db.schedule;
 const Reading = db.reading;
@@ -13,29 +14,32 @@ exports.create = (req, res) => {
   bus
   .save(bus)
   .then(data => {
-      for (i in req.body.schedules) { // save schedules
-        const schedule = new Schedule({
-          ...req.body.schedules[i],
-          bus: data.id,
-        });
-        schedule.save();
-      }
-
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || 'Some error occurred while creating the Bus.'
+    for (i in req.body.schedules) { // save schedules
+      const schedule = new Schedule({
+        ...req.body.schedules[i],
+        bus: data.id,
       });
+
+      schedule.save();
+    }
+
+    res.send(data);
+  })
+  .catch(err => {
+    res.status(500).send({
+      message:
+        err.message || 'Some error occurred while creating the Bus.'
     });
+  });
 };
 
 exports.findAll = (req, res) => {
   Bus.find()
     .then(data => {
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => reading.gps_datetime);
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => {
+          return reading ? reading.gpsDatetime : null;
+        });
 
         data[i].lastShot = latestReading;
       }
@@ -54,8 +58,8 @@ exports.findAllGroupedByStatus = (req, res) => {
     .then(data => {
       const currTime = new Date();
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => reading.gps_datetime);
-        const elapsedTime = latestReading.gps_datetime;
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => reading.gpsDatetime);
+        const elapsedTime = latestReading.gpsDatetime;
         var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
         data[i].status = 'no-signal';
         if (diffMinutes < process.env.TIME_LIMIT) {
@@ -88,9 +92,10 @@ exports.findOne = (req, res) => {
         res.status(404).send({ message: "Not found Bus with id " + id });
         return;
       }
-      const schedules = Schedule.find({ bus: id }).populate(['driver', 'route']).then((schedules) => schedules);
 
-      res.send({ ...data, schedules });
+      Schedule.find({ bus: id }).populate(['driver', 'route']).then((schedules) => {
+        res.send({...data._doc, schedules });
+      });
     })
     .catch(err => {
       res.status(500)
@@ -112,11 +117,12 @@ exports.findOneWithCurrentSchedule = (req, res) => {
         return;
       }
 
-      const schedule = Schedule.findOne({ bus: id }, {}, { sort: { 'created_at' : -1 } })
+      Schedule.findOne({ bus: id }, {}, { sort: { 'created_at' : -1 } })
         .populate(['driver', 'route'])
-        .then((schedule) => schedule);
+        .then((schedule) => {
+          res.send({ ...data._doc, schedule });
+        });
 
-      res.send({ ...data, schedule });
     })
     .catch(err => {
       res.status(500)
@@ -142,9 +148,22 @@ exports.update = (req, res) => {
         return;
       }
 
-      for (i in req.body.schedules) { // update schedules (seta 'active' como 'falso')
-        const schedule = req.body.schedules[i];
-        Schedule.findByIdAndUpdate(schedule.id, schedule, { useFindAndModify: false });
+      const schedules = req.body.schedules;
+      for (const i in schedules) { // update schedules (seta 'active' como 'falso')
+        const schedule = schedules[i];
+
+        if (schedule.id) {
+          Schedule.findByIdAndUpdate(schedule.id, schedule, { useFindAndModify: false })
+            .catch(e => console.log(e));
+        } else {
+          const schedule = new Schedule({
+            bus: id,
+            ...schedules[i],
+          });
+
+          schedule.save()
+            .catch(e => console.log(e));
+        }
       }
 
       res.send({ message: "Bus was updated successfully." });
