@@ -16,6 +16,7 @@
     "leaflet": "^1.7.1",
     "lodash.foreach": "^4.5.0",
     "lodash.get": "^4.4.2",
+    "vee-validate": "^3.4.13",
     "vue": "^2.6.11",
     "vue-router": "^3.5.2",
     "vue2-leaflet": "^2.7.1",
