@@ -27,7 +27,7 @@
 					outlined
 					rounded
 					dense
-					placeholder="Pesquisar por código, rota ou motorista..."
+					placeholder="Pesquisar por código..."
 				>
 					<template v-slot:prepend-inner>
 						<box-icon name="search" color="#999999" />
@@ -60,7 +60,7 @@
 					<v-list>
 						<v-list-item>
 							<v-checkbox
-								v-model="showActiveModules"
+								v-model="showModules['watching']"
 								class="mt-0 small"
 								label="Em circulação"
 								:hide-details="true"
@@ -68,7 +68,7 @@
 						</v-list-item>
 						<v-list-item>
 							<v-checkbox
-								v-model="showInactiveModules"
+								v-model="showModules['in-yard']"
 								class="mt-0"
 								label="Na garagem"
 								:hide-details="true"
@@ -76,7 +76,7 @@
 						</v-list-item>
 						<v-list-item>
 							<v-checkbox
-								v-model="showNoSignalModules"
+								v-model="showModules['no-signal']"
 								class="mt-0"
 								label="Sem sinal"
 								:hide-details="true"
@@ -89,19 +89,19 @@
 		<v-row class="mx-8">
 			<v-col cols="12">
 				<div
-					v-for="(item, i) in items"
+					v-for="(item, i) in filteredItems"
 					:key="`onibus-${i}`"
 					class="mb-3"
 				>
 					<list-item
-						:title="item.title"
-						@click="test"
+						:title="item.prefixCode"
+						@click="selectItem(item.id)"
 					>
 						<template v-slot:icon>
 							<v-img
 								max-height="50"
 								max-width="50"
-								:src="`/${item.status}-marker.png`"
+								:src="`/${item.status || 'no-signal'}-marker.png`"
 							/>
 						</template>
 						<template v-slot:subtitle>
@@ -112,12 +112,12 @@
 							<div class="d-flex flex-column">
 								<div class="d-flex">
 									<p>
-										REDE #<span>{{ item.networkCode }}</span>
+										REDE #<span>{{ item.network }}</span>
 									</p>
 								</div>
 								<div class="d-flex">
 									<p>
-										NET-ID: <span>{{ item.networkId }}</span>
+										NET-ID: <span>{{ item.netId }}</span>
 									</p>
 								</div>
 							</div>
@@ -132,6 +132,7 @@
 <script>
 import PageHeader from '../../../core/components/PageHeader.vue';
 import ListItem from '../../../core/components/ListItem.vue';
+import BusService from '../../../services/BusService';
 
 export default {
 	components: {
@@ -141,46 +142,56 @@ export default {
 
 	data() {
 		return {
-			searchQuery: "",
-			showActiveModules: true,
-			showInactiveModules: true,
-			showNoSignalModules: true,
-			items: [
-				{
-					title: 'N7511-10',
-					licensePlate: 'GSV4H86',
-					category: 'Ônibus Padron',
-					status: 'watching',
-					networkCode: '0020',
-					networkId: '243',
-				},
-				{
-					title: 'NB519-12',
-					licensePlate: 'JKP5E58',
-					category: 'Ônibus circular',
-					status: 'no-signal',
-					networkCode: '0020',
-					networkId: '127',
-				},
-				{
-					title: 'M7190-05',
-					licensePlate: 'JKR24S8',
-					category: 'Ônibus articulado',
-					status: 'in-yard',
-					networkCode: '0020',
-					networkId: '042',
-				},
-			],
+			searchQuery: '',
+			showModules: {
+				'no-signal': true,
+				'watching': true,
+				'in-yard': true,
+			},
+			items: [],
 		};
 	},
 
+	computed: {
+		filteredItems() {
+			return this.items.filter((item) => {
+				return this.showModules[item.status] && this.querySelections(item);
+			})
+		},
+	},
+
+	beforeMount() {
+		this.retrieveBuses();
+	},
+
 	methods: {
+		querySelections (item) { // não busca por rota ou motorista
+			return (item.prefixCode || '').toLowerCase().indexOf((this.searchQuery || '').toLowerCase()) > -1;
+		},
+
 		redirectToForm() {
 			this.$router.push('/configuracoes/novo');
 		},
 
-		test() {
-			console.log('eia a som eu');
+		selectItem(bus_id) {
+			this.$router.push(`/configuracoes/editar/${bus_id}`);
+		},
+
+		retrieveBuses() {
+			BusService.getAllGroupedByStatus()
+				.then(({ data }) => {
+					for (const status in data) {
+						for (const j in data[status]) {
+							this.items.push({
+								...data[status][j],
+								status: status,
+							})
+						}
+					}
+				})
+				.catch(e => {
+					console.log(e);
+				});
 		},
 	},
 }

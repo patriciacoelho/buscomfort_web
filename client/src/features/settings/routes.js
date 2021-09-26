@@ -23,12 +23,12 @@ export const routes = {
 	},
 	EDIT_SETTINGS: {
 		name: 'settings.edit',
-		path: '/configuracoes/editar',
+		path: '/configuracoes/editar/:bus',
 		component: SettingsForm,
 		meta: {
 			title: 'Configuração do ônibus',
 		},
-		// props: true,
+		props: true,
 	},
 };
 

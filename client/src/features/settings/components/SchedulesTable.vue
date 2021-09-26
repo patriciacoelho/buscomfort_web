@@ -15,7 +15,7 @@
 				small
 				class="mr-2"
 			>
-				{{ day }}
+				{{ WEEK_DAYS_TEXT[day] }}
 			</v-chip>
 		</template>
 		<template v-slot:item.time="{ item }">
@@ -27,6 +27,13 @@
 			<v-list-item-content>
 				<v-list-item-title v-text="item.driver.name" />
 				<v-list-item-subtitle v-text="item.driver.cpf" />
+			</v-list-item-content>
+		</template>
+		<template v-slot:item.route="{ item }">
+			<v-list-item-content>
+				<span>
+					{{ item.route.prefix }} - {{ item.route.name }}
+				</span>
 			</v-list-item-content>
 		</template>
 		<template v-slot:item.actions="{ item }">
@@ -47,6 +54,8 @@
 </template>
 
 <script>
+import { WEEK_DAYS_TEXT } from '../../../core/constants/weekDays';
+
 export default {
 	props: {
 		items: {
@@ -58,6 +67,7 @@ export default {
 
 	data() {
 		return {
+			WEEK_DAYS_TEXT,
 			headers: [
 				{
 					text: 'Dias da semana',
