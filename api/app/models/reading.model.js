@@ -3,7 +3,7 @@ module.exports = mongoose => {
   const schema = Schema(
     {
       gpsLocation: {
-        type: [Schema.Types.Decimal128],
+        type: [String],
         required: true,
       },
       gpsDatetime: {
