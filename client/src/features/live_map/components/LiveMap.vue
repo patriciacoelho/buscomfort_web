@@ -13,7 +13,7 @@
 				:attribution="attribution"
 			/>
 			<l-marker
-				v-for="marker in markers"
+				v-for="marker in filteredMarkers"
 				:key="`overviewMap-${marker.id}`"
 				:visible="marker.visible"
 				:lat-lng.sync="marker.position"
@@ -25,22 +25,22 @@
 					<v-card-text>
 						<span style="font-size: 1rem;">Status</span>
 						<v-checkbox
-							v-model="showActiveMarkers"
+							v-model="showMarkers['watching']"
 							class="mt-0 small"
 							label="Em circulação"
-							:hide-details="true"
+							hide-details
 						/>
 						<v-checkbox
-							v-model="showInactiveMarkers"
+							v-model="showMarkers['in-yard']"
 							class="mt-0"
 							label="Na garagem"
-							:hide-details="true"
+							hide-details
 						/>
 						<v-checkbox
-							v-model="showNoSignalMarkers"
+							v-model="showMarkers['no-signal']"
 							class="mt-0"
 							label="Sem sinal"
-							:hide-details="true"
+							hide-details
 						/>
 					</v-card-text>
 				</v-card>
@@ -74,22 +74,22 @@
 					<v-card-text>
 						<span style="font-size: 1rem;">Status</span>
 						<v-checkbox
-							v-model="showActiveMarkers"
+							v-model="showMarkers['watching']"
 							class="mt-0 small"
 							label="Em circulação"
-							:hide-details="true"
+							hide-details
 						/>
 						<v-checkbox
-							v-model="showInactiveMarkers"
+							v-model="showMarkers['in-yard']"
 							class="mt-0"
 							label="Na garagem"
-							:hide-details="true"
+							hide-details
 						/>
 						<v-checkbox
-							v-model="showNoSignalMarkers"
+							v-model="showMarkers['no-signal']"
 							class="mt-0"
 							label="Sem sinal"
-							:hide-details="true"
+							hide-details
 						/>
 					</v-card-text>
 				</v-card>
@@ -132,45 +132,37 @@ export default {
 				'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>',
 			url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 
-			showActiveMarkers: true,
-			showInactiveMarkers: true,
-			showNoSignalMarkers: true,
+			showMarkers: {
+				'no-signal': true,
+				'watching': true,
+				'in-yard': true,
+			},
 			sideSheetCollapsed: true,
 
 			overviewMap: null,
 			detailMap: null,
 
-			markers: [
-				{
-					id: 'm1',
-					position: { lat: -9.413294, lng: -40.512148 },
-					visible: true,
-					icon: icon({
-						iconUrl: "watching-marker.png",
-						iconSize: [45, 45],
-						iconAnchor: [16, 37]
-					}),
-				},
-				{
-					id: 'm2',
-					position: { lat: -9.411403, lng: -40.512175 },
-					visible: true,
-					icon: icon({
-						iconUrl: "in-yard-marker.png",
-						iconSize: [45, 45],
-						iconAnchor: [20, 45]
-					}),
-				},
-			],
+			markers: [],
 			selectedMarker: [],
+			updateMarkersClock: null,
 		};
+	},
+
+	computed: {
+		filteredMarkers() {
+			return this.markers.filter((marker) => {
+				return this.showMarkers[marker.status];
+			})
+		},
 	},
 
 	watch: {
 		collapsed: {
 			handler(newValue) {
 				this.sideSheetCollapsed = newValue;
-				this.selectedMarker = [];
+				if (newValue) {
+					this.selectedMarker = [];
+				}
 			},
 		},
 
@@ -191,28 +183,32 @@ export default {
 			this.overviewMap = this.$refs.overviewMap.mapObject;
 			this.detailMap = this.$refs.detailMap.mapObject;
 		});
+		this.updateMarkersClock = setInterval(this.getBuses, 60000);
+		// clearInterval(this.updateMarkersClock);
 	},
 
 	methods: {
 		getBuses() {
 			this.markers = [];
 			BusService.getAllGroupedByStatus()
-				.then(response => {
-					const noSignalBuses = response.data['no-signal'];
-					for (const i in noSignalBuses) {
-						this.markers.push({
-							...noSignalBuses[i],
-							position: {
-								lat: -9.413294 + 0.010011*i,
-								lng: -40.512148 + 0.005003*i,
-							},
-							visible: this.showNoSignalMarkers, // se está mostrando os marcadores "sem sinal"
-							icon: icon({
-								iconUrl: 'no-signal-marker.png',
-								iconSize: [45, 45],
-								iconAnchor: [16, 37]
-							}),
-						});
+				.then(({ data }) => {
+					for (const status in data) {
+						for (const j in data[status]) {
+							this.markers.push({
+								...data[status][j],
+								position: {
+									lat: -9.413294 + 0.010011*j,
+									lng: -40.512148 + 0.005003*j,
+								},
+								visible: this.showMarkers[status], // se está mostrando os marcadores do status
+								status,
+								icon: icon({
+									iconUrl: `${status}-marker.png`,
+									iconSize: [45, 45],
+									iconAnchor: [16, 37]
+								}),
+							});
+						}
 					}
 				})
 				.catch(e => console.log(e));
