@@ -10,10 +10,10 @@
 		</div>
 		<v-row class="justify-space-between">
 			<v-col>
-				<h2 class="primary--text pcs-title">ÔNIBUS U742-09</h2>
-				<h4 class="pcs-subtitle-3 my-1 side-sheet__subtitle">
-					CAMPUS JUAZEIRO --> CAMPUS CCA (Av. Sete de Setembro)
-				</h4>
+				<h2 class="primary--text pcs-title">ÔNIBUS {{ bus.prefixCode }}</h2>
+				<!-- <h4 class="pcs-subtitle-3 my-1 side-sheet__subtitle">
+					CAMPUS JUAZEIRO -> CAMPUS CCA (Av. Sete de Setembro)
+				</h4> -->
 				<v-divider class="my-4" />
 			</v-col>
 		</v-row>
@@ -37,21 +37,32 @@
 						Este ônibus se encontra na garagem, não está em operação no momento.
 					</p>
 				</div>
+				<div
+					v-else-if="loading"
+					class="text-center"
+				>
+					<v-progress-circular
+						:size="70"
+						:width="3"
+						color="#CCC"
+						indeterminate
+					/>
+				</div>
 				<div v-else>
 					<v-row class="justify-center align-center">
 						<v-col cols="3">
-							<comfort-level-icon style="height: 70px;" />
+							<comfort-level-icon v-model="latest.comfortLevel" style="height: 70px;" />
 						</v-col>
 						<v-col cols="7">
-							<p class="pcs-caption">NÍVEL 3</p>
+							<p class="pcs-caption">NÍVEL {{ latest.comfortLevel }}</p>
 							<p
 								class="pcs-subtitle my-1 font-weight-bold"
-								style="color: #B79229;"
+								:style="`color: ${COMFORT_LEVELS_COLOR[latest.comfortLevel]};`"
 							>
-								Pouco desconforto
+								{{ COMFORT_LEVELS_TEXT[latest.comfortLevel] }}
 							</p>
 							<p class="primary--text pcs-subtitle font-weight-light">
-								Níveis altos de temperatura e vibração
+								{{ comfortDetailsText }}
 							</p>
 						</v-col>
 					</v-row>
@@ -65,28 +76,28 @@
 								cols="3"
 							>
 								<temperature-sensor-icon style="height: 40px;" />
-								<p>32 ºC</p>
+								<p>{{ latest.temperature || '--' }} ºC</p>
 							</v-col>
 							<v-col
 								class="text-center"
 								cols="3"
 							>
 								<humidity-icon style="height: 40px;" />
-								<p>45 %rH</p>
+								<p>{{ (latest.humidity * 100) || '--' }} %rH</p>
 							</v-col>
 							<v-col
 								class="text-center"
 								cols="3"
 							>
 								<noise-sensor-icon style="height: 40px;" />
-								<p>60 db(A)</p>
+								<p>{{ latest.maxNoise || '--' }} db(A)</p>
 							</v-col>
 							<v-col
 								class="text-center"
 								cols="3"
 							>
 								<jerk-meter-icon style="height: 40px;" />
-								<p>1,6 m/s³</p>
+								<p>{{ latest.jerk[1] || '--' }} m/s³</p>
 							</v-col>
 						</v-row>
 					</div>
@@ -94,15 +105,16 @@
 					<div>
 						<p class="dark--text pcs-subtitle my-3">
 							Localização
+							<!-- usar biblioteca para buscar por localização e retornar endereço -->
 						</p>
 						<p>
-							Av. Guararapes, 2114 - Centro
+							** Av. Guararapes, 2114 - Centro
 						</p>
 						<p>
-							Petrolina - PE, 56302-971
+							Petrolina - PE, 56302-971 **
 						</p>
 						<p class="pcs-subtitle-3 dark--text">
-							-9.400000, -40.500000
+							{{ latest.gpsLocation[0] || '--' }}, {{ latest.gpsLocation[1] || '--' }}
 						</p>
 					</div>
 				</div>
@@ -112,6 +124,7 @@
 						rounded
 						color="primary"
 						dark
+						@click="redirectToHistory"
 					>
 						Acessar histórico
 					</v-btn>
@@ -129,6 +142,8 @@ import HumidityIcon from './HumidityIcon.vue';
 import JerkMeterIcon from './JerkMeterIcon.vue';
 import TemperatureSensorIcon from './TemperatureSensorIcon.vue';
 import ComfortLevelIcon from './ComfortLevelIcon.vue';
+import ReadingService from '../../../services/ReadingService';
+import { COMFORT_LEVELS_TEXT, COMFORT_LEVELS_COLOR } from '../../../core/constants/comfortLevels';
 
 export default {
 	components: {
@@ -141,17 +156,135 @@ export default {
 		ComfortLevelIcon,
 	},
 
+	props: {
+		bus: {
+			type: Object,
+			default: null,
+			required: true,
+		}
+	},
+
 	data() {
 		return {
-			moduleStatus: 'watching',
+			COMFORT_LEVELS_TEXT,
+			COMFORT_LEVELS_COLOR,
+			moduleStatus: 'watching', // update w/ bus.status
+			latest: {},
+			loading: true,
+			limitRef: {
+				temperature: {
+					upper: 27,
+					lower: 21,
+				},
+				humidity: {
+					upper: 0.8,
+					lower: 0.3,
+				},
+				noise: {
+					upper: 70,
+				},
+				jerk: {
+					upper: 1.2,
+				},
+			},
+			requestLatestClock: null,
 		};
 	},
 
+	computed: {
+		comfortDetailsText(){
+			let comfortDetails = '';
+			let upperLimit = [];
+			let lowerLimit = [];
+			if( this.latest.temperature > this.limitRef.temperature.upper )
+				upperLimit.push('temperatura');
+			if( this.latest.temperature < this.limitRef.temperature.lower )
+				lowerLimit.push('temperatura');
+			if( this.latest.humidity > this.limitRef.humidity.upper )
+				upperLimit.push('umidade');
+			if( this.latest.humidity < this.limitRef.humidity.lower )
+				lowerLimit.push('umidade');
+			if( this.latest.maxNoise > this.limitRef.noise.upper )
+				upperLimit.push('ruído');
+			if( this.latest.jerk > this.limitRef.jerk.upper )
+				upperLimit.push('jerk');
+
+			if (!upperLimit.length && !lowerLimit.length){
+				comfortDetails += 'Ambiente com níveis dentro do padrão de conforto';
+			} else {
+				let upperString = '';
+				for (let i = 0; i < upperLimit.length; i++) {
+					if( i == (upperLimit.length - 1) ) {
+						upperString += upperLimit[i]; 
+					} else {
+						if( i == (upperLimit.length - 2) )
+							upperString += upperLimit[i] + ' e '; 
+						else
+							upperString += upperLimit[i] + ', '; 
+					}
+				}
+				let lowerString = '';
+				for (let i = 0; i < lowerLimit.length; i++) {
+					if( i == (lowerLimit.length - 1) ) {
+						lowerString += lowerLimit[i]; 
+					} else {
+						if( i == (lowerLimit.length - 2) )
+							lowerString += lowerLimit[i] + ' e '; 
+						else
+							lowerString += lowerLimit[i] + ', '; 
+					}
+				}
+				if(upperString !== '') {
+					comfortDetails += 'Níveis altos de ' + upperString;
+				} 
+				if(lowerString !== '') {	
+					if(upperString !== '') {
+						comfortDetails += ', e baixa ' + lowerString;
+					} else {
+						comfortDetails += 'Níveis baixos de ' + lowerString;
+					}
+				}
+			}
+			return comfortDetails;
+		},
+	},
+
+	mounted() {
+		this.getReading();
+		this.requestLatestClock = setInterval(this.getReading, 60000);
+	},
+
 	methods: {
+		computedComfortLevel(params) { // temporariamente média simples
+			return Math.round((parseFloat(params.thermalComfort) + parseFloat(params.noiseComfort) + parseFloat(params.rideComfort)) / 3);
+		},
+
+		getReading() {
+			const bus_id = this.bus.id;
+			this.loading = true;
+			ReadingService.getLatest(bus_id)
+				.then(({ data }) => {
+					const comfortLevel = this.computedComfortLevel(data);
+					this.latest = {
+						...data,
+						comfortLevel,
+					};
+					this.loading = false;
+				})
+				.catch(e => {
+					this.loading = false;
+					console.log(e);
+				});
+		},
+
+		redirectToHistory() {
+			this.$router.push(`/historico/detalhamento/${this.bus.id}`);
+		},
+
 		esc() {
-			console.log('esc me');
+			clearInterval(this.requestLatestClock);
 			this.$emit('close', true);
-		}
+		},
 	}
 };
 </script>

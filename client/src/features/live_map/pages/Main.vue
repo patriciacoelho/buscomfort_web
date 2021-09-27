@@ -13,7 +13,10 @@
 			v-if="!sideSheetCollapsed"
 			class="flex-grow-0 live-map__detail-card"
 		>
-			<more-info @close="closeSideSheet" />
+			<more-info
+				:bus="selectedBus"
+				@close="closeSideSheet"
+			/>
 		</div>
 	</div>
 </template>
@@ -31,6 +34,7 @@ export default {
 	data() {
 		return {
 			sideSheetCollapsed: true,
+			selectedBus: null,
 		};
 	},
 
@@ -44,8 +48,8 @@ export default {
 			this.sideSheetCollapsed = true;
 		},
 
-		handleMarkerSelection(e) {
-			console.log(e);
+		handleMarkerSelection(marker) {
+			this.selectedBus = marker;
 			this.sideSheetCollapsed = false;
 		},
 	}
