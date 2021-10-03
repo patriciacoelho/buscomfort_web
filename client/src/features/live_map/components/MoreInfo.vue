@@ -138,6 +138,7 @@ import TemperatureSensorIcon from './TemperatureSensorIcon.vue';
 import ComfortLevelIcon from './ComfortLevelIcon.vue';
 import ReadingService from '../../../services/ReadingService';
 import { COMFORT_LEVELS_TEXT, COMFORT_LEVELS_COLOR } from '../../../core/constants/comfortLevels';
+import computedComfortLevel from '../../../core/utils/computedComfort';
 
 export default {
 	components: {
@@ -249,9 +250,7 @@ export default {
 	},
 
 	methods: {
-		computedComfortLevel(params) { // temporariamente média simples
-			return Math.round((parseFloat(params.thermalComfort) + parseFloat(params.noiseComfort) + parseFloat(params.rideComfort)) / 3);
-		},
+		computedComfortLevel,
 
 		getReading() {
 			const bus_id = this.bus.id;
