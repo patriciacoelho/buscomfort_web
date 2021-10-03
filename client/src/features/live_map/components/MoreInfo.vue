@@ -11,9 +11,9 @@
 		<v-row class="justify-space-between">
 			<v-col>
 				<h2 class="primary--text pcs-title">ÔNIBUS {{ bus.prefixCode }}</h2>
-				<!-- <h4 class="pcs-subtitle-3 my-1 side-sheet__subtitle">
-					CAMPUS JUAZEIRO -> CAMPUS CCA (Av. Sete de Setembro)
-				</h4> -->
+				<h4 v-if="latest.currentSchedule" class="pcs-subtitle-3 my-1 side-sheet__subtitle">
+					{{ `Rota: ${latest.currentSchedule.route.name} (${latest.currentSchedule.route.spec})` }} 
+				</h4>
 				<v-divider class="my-4" />
 			</v-col>
 		</v-row>
@@ -105,20 +105,14 @@
 					<div>
 						<p class="dark--text pcs-subtitle my-3">
 							Localização
-							<!-- usar biblioteca para buscar por localização e retornar endereço -->
 						</p>
-						<p>
-							** Av. Guararapes, 2114 - Centro
-						</p>
-						<p>
-							Petrolina - PE, 56302-971 **
-						</p>
-						<p class="pcs-subtitle-3 dark--text">
+						<!-- usar biblioteca para buscar por localização e retornar endereço -->
+						<p class="pcs-subtitle-3">
 							{{ latest.gpsLocation[0] || '--' }}, {{ latest.gpsLocation[1] || '--' }}
 						</p>
 					</div>
 				</div>
-				<v-row justify="center" class="mt-auto">
+				<v-row justify="center" class="mt-6">
 					<v-btn
 						class="my-4 px-8"
 						rounded
