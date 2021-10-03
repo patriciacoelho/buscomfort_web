@@ -12,6 +12,9 @@ import {
   ValidationProvider,
   ValidationObserver
 } from 'vee-validate';
+import VueApexCharts from 'vue-apexcharts';
+
+Vue.use(VueApexCharts);
 
 // import CustomRules from './core/validators';
 import * as rules from 'vee-validate/dist/rules';
@@ -34,6 +37,7 @@ Object.keys(allRules).forEach(rule => {
 //   message: 'Esse campo é obrigatório'
 // });
 
+Vue.component('apexchart', VueApexCharts);
 Vue.component('ValidationProvider', ValidationProvider);
 Vue.component('ValidationObserver', ValidationObserver);
 Vue.component('l-map', LMap);
