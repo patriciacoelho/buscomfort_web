@@ -24,7 +24,7 @@ exports.findLatestByBus = (req, res) => {
     return;
   }
 
-  Reading.findOne({ bus: req.params.bus }, {}, { sort: { 'created_at' : -1 } })
+  Reading.findOne({ bus: req.params.bus }, {}, { sort: { 'createdAt' : -1 } })
     .populate('bus')
     .then(data => {
       res.send(data);
@@ -48,26 +48,29 @@ exports.findAllByBus = (req, res) => {
   const driver = req.query.driver;
   let condition;
 
+  const today = new Date();
   switch(interval) {
   case 'm':
-    condition = { created_at: { $gte: new Date().setDate(today.getDate() - 30) } };
+    condition = { createdAt: { $gte: new Date().setDate(today.getDate() - 30) } };
     break;
   case 'w':
-    condition = { created_at: { $gte: new Date().setDate(today.getDate() - 7) } };
+    condition = { createdAt: { $gte: new Date().setDate(today.getDate() - 7) } };
     break;
   case 'd':
   default:
-    condition = { created_at: { $gte: new Date(new Date().getTime() - (24 * 60 * 60 * 1000)) } };
+    condition = { createdAt: { $gte: new Date(new Date().getTime() - (24 * 60 * 60 * 1000)) } };
   }
 
-  Reading.find({ bus: req.params.bus, ...condition }, {}, { sort: { 'created_at' : -1 } })
+  Reading.find({ bus: req.params.bus, ...condition })
     .then(data => {
       if (!route && !driver) {
         res.send(data);
         return;
       }
 
-      let result = data.filter((reading) => { // filtra por motorista e/ou rota
+      let result = data.filter((reading) => { // filtra por motorista e/ou rota 
+        // -- não está filtrando por rota e motorista todas as rotas q vem aqui pertencem ao ônibus,
+        // a questão é que tem que ver se o gpsDatetime tá dentro do intervalo da escala
         const schedules = Schedule.find({ bus: req.params.bus }).populate(['driver', 'route']).then((schedules) => schedules);
 
         for (i in schedules) {

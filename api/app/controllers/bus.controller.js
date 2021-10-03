@@ -37,7 +37,7 @@ exports.findAll = (req, res) => {
   Bus.find()
     .then(data => {
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => {
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'createdAt' : -1 } }).then(reading => {
           return reading ? reading.gpsDatetime : null;
         });
 
@@ -58,7 +58,7 @@ exports.findAllGroupedByStatus = (req, res) => {
     .then(data => {
       const currTime = new Date();
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'created_at' : -1 } }).then(reading => reading.gpsDatetime);
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'createdAt' : -1 } }).then(reading => reading.gpsDatetime);
         const elapsedTime = latestReading.gpsDatetime;
         var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
         data[i].status = 'no-signal';
@@ -117,7 +117,8 @@ exports.findOneWithCurrentSchedule = (req, res) => {
         return;
       }
 
-      Schedule.findOne({ bus: id }, {}, { sort: { 'created_at' : -1 } })
+      // Não está retornando a escala do horário e sim a última criada
+      Schedule.findOne({ bus: id }, {}, { sort: { 'createdAt' : -1 } })
         .populate(['driver', 'route'])
         .then((schedule) => {
           res.send({ ...data._doc, schedule });
