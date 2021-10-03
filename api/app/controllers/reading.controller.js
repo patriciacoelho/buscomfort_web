@@ -86,14 +86,14 @@ exports.findAllByBus = (req, res) => {
   const now = new Date();
   switch(interval) {
   case 'm':
-    condition = { createdAt: { $gte: new Date().setDate(now.getDate() - 30) } };
+    condition = { gpsDatetime: { $gte: new Date().setDate(now.getDate() - 30) } };
     break;
   case 'w':
-    condition = { createdAt: { $gte: new Date().setDate(now.getDate() - 7) } };
+    condition = { gpsDatetime: { $gte: new Date().setDate(now.getDate() - 7) } };
     break;
   case 'd':
   default:
-    condition = { createdAt: { $gte: new Date(now.getTime() - (24 * 60 * 60 * 1000)) } };
+    condition = { gpsDatetime: { $gte: new Date(now.getTime() - (24 * 60 * 60 * 1000)) } };
   }
 
   Reading.find({ bus: req.params.bus, ...condition }, {}, { sort: { 'gpsDatetime' : -1 } })
