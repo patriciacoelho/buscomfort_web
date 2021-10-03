@@ -14,7 +14,7 @@ exports.create = (req, res) => {
   bus
   .save(bus)
   .then(data => {
-    for (i in req.body.schedules) { // save schedules
+    for (i in req.body.schedules) {
       const schedule = new Schedule({
         ...req.body.schedules[i],
         bus: data.id,
@@ -37,7 +37,7 @@ exports.findAll = (req, res) => {
   Bus.find()
     .then(data => {
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'createdAt' : -1 } }).then(reading => {
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => {
           return reading ? reading.gpsDatetime : null;
         });
 
@@ -58,7 +58,7 @@ exports.findAllGroupedByStatus = (req, res) => {
     .then(data => {
       const currTime = new Date();
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'createdAt' : -1 } }).then(reading => reading.gpsDatetime);
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => reading.gpsDatetime);
         const elapsedTime = latestReading.gpsDatetime;
         var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
         data[i].status = 'no-signal';
@@ -117,13 +117,41 @@ exports.findOneWithCurrentSchedule = (req, res) => {
         return;
       }
 
-      // Não está retornando a escala do horário e sim a última criada
-      Schedule.findOne({ bus: id }, {}, { sort: { 'createdAt' : -1 } })
+      let responseData = data;
+      Schedule.find({ bus: id })
         .populate(['driver', 'route'])
-        .then((schedule) => {
-          res.send({ ...data._doc, schedule });
-        });
+        .then((schedules) => {
+          const now = new Date().getTime();
+          for (const j in schedules) {
+            if (!schedules[j].active) {
+              continue;
+            }
 
+            if (schedules[j].days.indexOf(new Date().getDay() + 1) === -1) {
+              continue;
+            }
+
+            const startDate = new Date();
+            startDate.setHours(
+              schedules[j].time.start.split(':')[0],
+              schedules[j].time.start.split(':')[1],
+              0
+            );
+
+            const endDate = new Date();
+            endDate.setHours(
+              schedules[j].time.end.split(':')[0],
+              schedules[j].time.end.split(':')[1],
+              0
+            );
+
+            if (now < endDate.getTime() && now > startDate.getTime()) {
+              responseData = { ...data._doc, currentSchedule: schedules[j] };
+              break;
+            }
+          }
+          res.send(responseData);
+        });
     })
     .catch(err => {
       res.status(500)
@@ -150,7 +178,7 @@ exports.update = (req, res) => {
       }
 
       const schedules = req.body.schedules;
-      for (const i in schedules) { // update schedules (seta 'active' como 'falso')
+      for (const i in schedules) {
         const schedule = schedules[i];
 
         if (schedule.id) {
