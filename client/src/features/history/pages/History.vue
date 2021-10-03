@@ -1,42 +1,404 @@
 <template>
-	<div>
-		Bus History
-	</div>
+	<v-col
+		class="pa-0"
+		cols="12"
+	>
+		<page-header
+			title="ÔNIBUS N432-11"
+		>
+			<template v-slot:subtitle>
+				<p v-html="pageHeaderSubtitle"></p>
+			</template>
+			<template v-slot:action>
+				<v-btn
+					class="px-8"
+					color="primary"
+					rounded
+					outlined
+					dark
+					@click="showFiltersModal = true"
+				>
+					<box-icon class="mr-2" name="filter-alt" color="#2F2E3A" />
+					Filtrar
+				</v-btn>
+			</template>
+		</page-header>
+
+		<v-dialog
+			v-model="showFiltersModal"
+			max-width="500px"
+			@click:outside="closeFiltersModal"
+		>
+			<v-card>
+				<v-card-title class="text-h6">Filtrar histórico por escala</v-card-title>
+				<v-card-text>
+					<!-- <v-row class="mt-2">
+						<v-col cols="12">
+							<v-checkbox
+								v-model="setLatestScheduleActive"
+								label="Filtrar por última escala ativa"
+								hide-details
+							/>
+						</v-col>
+					</v-row> -->
+					<v-row class="mt-2">
+						<v-col cols="12">
+							<v-autocomplete
+								v-model="selectedRoute"
+								:items="routeOptions"
+								label="Rota"
+								placeholder="Selecione..."
+								persistent-placeholder
+								hide-details
+								no-data-text="Nenhuma rota encontrada"
+								clearable
+								no-filter
+								outlined
+								dense
+								@input="onSelectRoute"
+							>
+								<template v-slot:selection="{ item }">
+									<span>{{ item.prefix }} - {{ item.name}}</span>
+								</template>
+								<template v-slot:item="{ item }">
+									<v-list-item-content>
+										{{ item.prefix }} - {{ item.name }}
+									</v-list-item-content>
+								</template>
+							</v-autocomplete>
+						</v-col>
+					</v-row>
+					<v-row>
+						<v-col cols="12">
+							<v-autocomplete
+								v-model="selectedDriver"
+								:items="driverOptions"
+								label="Motorista"
+								placeholder="Selecione..."
+								persistent-placeholder
+								hide-details
+								no-data-text="Nenhum motorista encontrado"
+								clearable
+								no-filter
+								outlined
+								dense
+								@input="onSelectDriver"
+							>
+								<template v-slot:selection="{ item }">
+									<span v-text="item.name" />
+								</template>
+								<template v-slot:item="{ item }">
+									<v-list-item-content>
+										<v-list-item-title v-text="item.name" />
+										<v-list-item-subtitle v-text="item.cpf" />
+									</v-list-item-content>
+								</template>
+							</v-autocomplete>
+						</v-col>
+					</v-row>
+				</v-card-text>
+				<v-card-actions>
+					<v-btn color="red darken-1" text @click="closeFiltersModal">Cancelar</v-btn>
+					<v-spacer />
+					<v-btn color="success darken-1" text @click="handleFilters">Filtrar</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+
+		<v-row class="mx-8">
+			<v-tabs
+				v-model="currentTab"
+				background-color="transparent"
+				color="accent"
+			>
+				<v-tab
+					v-for="index in 4"
+					:key="`tab-${index}`"
+				>
+					{{ HISTORY_TABS_TITLE[index+1] }}
+				</v-tab>
+			</v-tabs>
+
+			<v-tabs-items v-model="currentTab">
+				<v-tab-item
+					v-for="index in 4"
+					:key="`tab-${index}`"
+				>
+					<default-history-view
+						v-if="readingsData"
+						:current-view="index"
+						:data="readingsData[HISTORY_TABS_NAME[index+1]]"
+					/>
+				</v-tab-item>
+			</v-tabs-items>
+		</v-row>
+	</v-col>
 </template>
 
 <script>
+import PageHeader from '../../../core/components/PageHeader.vue';
+import DefaultHistoryView from '../components/DefaultHistoryView.vue';
 import BusService from '../../../services/BusService';
+import { HISTORY_TABS_TITLE, HISTORY_TABS_NAME, TEMPERATURE, HUMIDITY, NOISE, KINETIC } from '../../../core/constants/historyTabs';
+import ReadingService from '../../../services/ReadingService';
 
 export default {
+	components: {
+		PageHeader,
+		DefaultHistoryView,
+	},
+
 	props: {
 		bus: {
 			type: String,
 			default: null,
+			required: true,
 		},
 	},
 
 	data() {
 		return {
+			HISTORY_TABS_TITLE,
+			HISTORY_TABS_NAME,
 			busData: null,
+			readingsData: null,
+			showFiltersModal: false,
+			currentTab: null,
+			filters: {
+				route: null,
+				driver: null,
+			},
+			selectedRoute: null,
+			selectedDriver: null,
+			routes: [],
+			drivers: [],
+			routeOptions: [],
+			driverOptions: [],
+			setLatestScheduleActive: false,
+			updateReadingsClock: null,
+			latestReading: null,
 		};
 	},
 
 	mounted() {
-		if (this.bus) {
-			this.getBus();
-		}
+		this.getBus();
+		this.getReadings();
+		this.updateReadingsClock = setInterval(this.getLatestReading, 60000);
+	},
+
+	computed: {
+		pageHeaderSubtitle() {
+			const base = 'Histórico dos dados coletados do ônibus para ';
+			if ( this.filters.driver && this.filters.route ) {
+				return `${base} para o motorista ${this.filters.driver.name.bold()} na rota ${this.filters.route.name.bold()}`;
+			}
+			if ( this.filters.driver) {
+				return `${base} para o motorista ${this.filters.driver.name.bold()} em ${('todas as rotas').bold()}`;
+			}
+			if ( this.filters.route ) {
+				return `${base} para ${('todos os motoristas').bold()} da rota ${this.filters.route.name.bold()}`;
+			}
+			return `${base} ${('todas as escalas').bold()} (rotas e motoristas)`;
+		},
 	},
 
 	methods: {
+		onSelectRoute(value) {
+			const drivers = [];
+			if (value) {
+				for (const i in this.busData.schedules) {
+					const schedule = this.busData.schedules[i];
+					if (schedule.active) {
+						if (schedule.route._id === value._id && drivers.indexOf(schedule.driver) === -1) {
+							drivers.push(schedule.driver);
+						}
+					}
+				}
+			}
+
+			this.driverOptions = this.drivers.filter((driver) => {
+				return !value || drivers.indexOf(driver) > -1;
+			});
+		},
+
+		onSelectDriver(value) {
+			const routes = [];
+			if (value) {
+				for (const i in this.busData.schedules) {
+					const schedule = this.busData.schedules[i];
+					if (schedule.active) {
+						if (schedule.driver._id === value._id && routes.indexOf(schedule.route) === -1) {
+							routes.push(schedule.route);
+						}
+					}
+				}
+			}
+
+			this.routeOptions = this.routes.filter((route) => {
+				return !value || routes.indexOf(route) > -1;
+			});
+		},
+
 		getBus() {
 			BusService.get(this.bus)
-				.then(response => {
-					this.busData = response.data._doc;
-					console.log(response.data._doc);
+				.then(({ data }) => {
+					this.busData = data;
+					for (const i in data.schedules) {
+						const schedule = data.schedules[i];
+						if (schedule.active) {
+							if (this.drivers.indexOf(schedule.driver) === -1) {
+								this.drivers.push(schedule.driver);
+								this.driverOptions.push(schedule.driver);
+							}
+							if (this.routes.indexOf(schedule.route) === -1) {
+								this.routes.push(schedule.route);
+								this.routeOptions.push(schedule.route);
+							}
+						}
+					}
 				})
-				.catch(e => {
-					console.log(e);
-				});
+				.catch(e => console.log(e));
+		},
+
+		getLatestReading() {
+			if (this.filters.route || this.filters.driver) {
+				return;
+			}
+
+			if (this.latestReading) {
+				ReadingService.getLatest(this.bus)
+					.then(({ data }) => {
+						if (data.id !== this.latestReading) {
+							this.latestReading = data.id;
+							this.pushToFormattedData(data);
+						}
+					})
+					.catch(e => console.log(e));
+			}
+		},
+
+		getReadings() {
+			const filters = {
+				route: this.filters.route ? this.filters.route._id : null,
+				driver: this.filters.driver ? this.filters.driver._id : null,
+			};
+
+			ReadingService.getAllByBus(this.bus, { ...filters })
+				.then(({ data }) => {
+					this.readingsData = {
+						temperature: {
+							comfortChart: [0, 0, 0, 0, 0],
+							lineChart: { name: 'Temperatura', data: [] },
+							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
+							unitOfMeasure: this.unitOfMeasure(TEMPERATURE),
+							limits: {
+								max: 50,
+								min: 12,
+								maxComfortable: 27,
+								minComfortable: 19,
+							},
+						},
+						humidity: {
+							comfortChart: [0, 0, 0, 0, 0],
+							lineChart: { name: 'Umidade', data: [] },
+							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
+							unitOfMeasure: this.unitOfMeasure(HUMIDITY),
+							limits: {
+								max: 100,
+								min: 0,
+								maxComfortable: 80,
+								minComfortable: 30,
+							},
+						},
+						noise: {
+							comfortChart: [0, 0, 0, 0, 0],
+							lineChart: { name: 'Ruído', data: [] },
+							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
+							unitOfMeasure: this.unitOfMeasure(NOISE),
+							limits: {
+								max: 120,
+								min: 20,
+								maxComfortable: 80,
+								minComfortable: 20,
+							},
+						},
+						jerk: {
+							comfortChart: [0, 0, 0, 0, 0],
+							lineChart: { name: 'Jerk', data: [] },
+							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
+							unitOfMeasure: this.unitOfMeasure(KINETIC),
+							limits: {
+								max: 2.0,
+								min: 0.6,
+								maxComfortable: 1.6,
+								minComfortable: 0.6,
+							},
+						},
+					};
+
+					const lastIndex = data.length - 1;
+					this.latestReading = data[lastIndex].id;
+					for (const i in data) {
+						this.pushToFormattedData(data[i]);
+					}
+				})
+				.catch(e => console.log(e));
+		},
+
+		pushToFormattedData(reading) {
+			this.readingsData['temperature'].comfortChart[Math.round(parseFloat(reading.thermalComfort)) - 1]++;
+			this.readingsData['humidity'].comfortChart[Math.round(parseFloat(reading.thermalComfort)) - 1]++;
+			this.readingsData['noise'].comfortChart[Math.round(parseFloat(reading.noiseComfort)) - 1]++;
+			this.readingsData['jerk'].comfortChart[Math.round(parseFloat(reading.rideComfort)) - 1]++;
+			
+			const datetime = new Date(reading.gpsDatetime);
+			const formattedTime = `${String((datetime.getHours())).padStart(2, '0')}:${String((datetime.getMinutes())).padStart(2, '0')}`;
+			this.readingsData['temperature'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.temperature) });
+			this.readingsData['humidity'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.humidity*100) });
+			this.readingsData['noise'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.maxNoise) });
+			this.readingsData['jerk'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.jerk[1]) });
+
+			// combo temporario
+			this.readingsData['temperature'].comboChart[0].data.push(reading.temperature);
+			this.readingsData['humidity'].comboChart[0].data.push(reading.humidity*100);
+			this.readingsData['noise'].comboChart[0].data.push(reading.maxNoise);
+			this.readingsData['jerk'].comboChart[0].data.push(reading.jerk[1]);
+
+			this.readingsData['temperature'].comboChart[1].data.push(reading.temperature);
+			this.readingsData['humidity'].comboChart[1].data.push(reading.humidity*100);
+			this.readingsData['noise'].comboChart[1].data.push(reading.maxNoise);
+			this.readingsData['jerk'].comboChart[1].data.push(reading.jerk[1]);
+		},
+
+		unitOfMeasure(index) {
+			switch(index) {
+			case KINETIC:
+				return 'm/s³';
+			case NOISE:
+				return 'db(A)';
+			case HUMIDITY:
+				return '%';
+			case TEMPERATURE:
+			default:
+				return 'ºC';
+			}
+		},
+
+		handleFilters() {
+			this.filters = {
+				driver: this.selectedDriver,
+				route: this.selectedRoute,
+			};
+			this.getReadings();
+			this.closeFiltersModal();
+		},
+
+		closeFiltersModal() {
+			this.showFiltersModal = false;
+			this.selectedRoute = null;
+			this.selectedDriver = null;
+			this.driverOptions = this.drivers;
+			this.routeOptions = this.routes;
 		},
 	},
 }
