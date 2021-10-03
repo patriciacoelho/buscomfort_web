@@ -10,7 +10,7 @@ class ReadingService {
   }
 
   getAllByBus(bus_id, query) { // alternativamente pode dividir em três services por interval
-    return http.get(`/readings/${bus_id}?interval=${query.interval}, route=${query.route}, driver=${query.driver}`);
+    return http.get(`/readings/${bus_id}?${query.interval ? `interval=${query.interval}, ` : ''}${query.route ? `route=${query.route}, ` : ''}${query.driver ? `driver=${query.driver}` : ''}`);
   }
 }
 
