@@ -1,3 +1,4 @@
+const { reading } = require('../models');
 const db = require('../models');
 const Reading = db.reading;
 const Schedule = db.schedule;
@@ -163,3 +164,61 @@ exports.findAllByBus = (req, res) => {
       });
     });
 };
+
+exports.weekAmounts = (req, res) => {
+  if (!req.params.bus) {
+    res.status(400).send({ message: "'bus' parameter can not be empty!" });
+    return;
+  }
+
+  const now = new Date();
+  const condition = { gpsDatetime: { $gte: new Date().setDate(now.getDate() - 7) } };
+  let responseData = { temperature: [], humidity: [], maxNoise: [], jerk: [],};
+  Reading.find({ bus: req.params.bus, ...condition }, {}, { sort: { 'gpsDatetime' : -1 } })
+    .then(async (data) => {
+      let groupedData = [[], [], [], [], [], [], []];
+      for (const i in data) {
+        const reading = data[i];
+        const datetime = new Date(reading.gpsDatetime).getDay();
+        groupedData[datetime].push(reading);
+      }
+
+      for (let j = 0; j < 7; j++) {
+        const weekDay = new Date(new Date().setDate(now.getDate() - (6 - j))).getDay();
+
+        const sensors = ['temperature', 'humidity', 'maxNoise', 'jerk']
+        for (const k in sensors) {
+          const sensorReading = groupedData[weekDay].map( el => {
+            if (sensors[k] === 'humidity') {
+              return parseFloat(el.humidity) * 100;
+            }
+            return parseFloat(sensors[k] !== 'jerk' ? el[sensors[k]] : el.jerk[1]);
+          });
+
+          const length = sensorReading.length;
+          if (!length) {
+            responseData[sensors[k]].push({ weekDay: weekDay + 1 });
+            continue;
+          }
+
+          const max = sensorReading.reduce((a, b) => Math.max(a, b));
+          const min = sensorReading.reduce((a, b) => Math.min(a, b));
+          const sum = sensorReading.reduce((sum, curr) => sum + curr);
+          responseData[sensors[k]].push({
+            weekDay: weekDay + 1,
+            mean: parseFloat((sum / length).toFixed(1)),
+            max,
+            min,
+          });
+        }
+      }
+
+      res.send(responseData);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || 'Some error occurred while retrieving readings to that bus.'
+      });
+    });
+}

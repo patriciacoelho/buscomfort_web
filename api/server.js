@@ -59,6 +59,7 @@ app.put('/api/buses/:id', buses.update);
 app.post('/api/readings', readings.create);
 app.get('/api/readings/:bus/latest', readings.findLatestByBus);
 app.get('/api/readings/:bus', readings.findAllByBus);
+app.get('/api/readings/:bus/week-amounts', readings.weekAmounts);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));

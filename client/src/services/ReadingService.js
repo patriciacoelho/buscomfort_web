@@ -12,6 +12,10 @@ class ReadingService {
   getAllByBus(bus_id, params) {
     return http.get(`/readings/${bus_id}`, { params });
   }
+
+  getWeekAmounts(bus_id) {
+    return http.get(`/readings/${bus_id}/week-amounts`);
+  }
 }
 
 export default new ReadingService();
