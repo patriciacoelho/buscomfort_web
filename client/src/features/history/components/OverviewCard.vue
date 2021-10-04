@@ -7,7 +7,7 @@
 			<v-row>
 				<v-col cols="6">
 					<div class="d-flex ml-n7">
-						<Meter :value="latest" :maxValue="limits.max" :minValue="limits.min" />
+						<Meter :value="latest !== '--' ? latest : 0" :maxValue="limits.max" :minValue="limits.min" />
 						<div class="d-flex flex-column justify-center ml-n3">
 							<p class="pcs-title">{{ latest }} {{ unit }}</p>
 							<span class="pcs-link">Medida mais recente</span>
@@ -17,7 +17,7 @@
 				</v-col>
 				<v-col cols="6">
 					<div class="d-flex ml-n7">
-						<Meter :value="parseFloat(mean)" :maxValue="limits.max" :minValue="limits.min" />
+						<Meter :value="mean !== '--' ? parseFloat(mean) : 0" :maxValue="limits.max" :minValue="limits.min" />
 						<div class="d-flex flex-column justify-center ml-n3">
 							<p class="pcs-title">{{ mean }} {{ unit }}</p>
 							<span class="pcs-link">Média de {{ HISTORY_TABS_TITLE[currentView].toLowerCase() }}</span>
