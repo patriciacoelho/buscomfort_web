@@ -4,11 +4,15 @@ export default {
     type: 'line',
   },
   legend: { show: false },
-  stroke: { width: [0, 4] },
+  stroke: { width: [0, 0, 4] },
   dataLabels: {
     enabled: true,
-    enabledOnSeries: [1]
+    enabledOnSeries: [2]
   },
-  xaxis: { type: 'datetime', show: false },
-  yaxis: [{}, { opposite: true, show: false, } ],
+  xaxis: { show: false },
+  plotOptions: {
+    bar: {
+      columnWidth: '50%'
+    }
+  },
 };

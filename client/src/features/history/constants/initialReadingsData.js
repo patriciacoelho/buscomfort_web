@@ -21,16 +21,8 @@ export default {
     comboChart: {
       labels: [],
       series: [
-        {
-          name: 'Intervalo',
-          data: [],
-          type: 'rangeBar',
-          plotOptions: {
-            bar: {
-              horizontal: false,
-            },
-          },
-        },
+        { name: 'Mínima', data: [], type: 'column' },
+        { name: 'Máxima', data: [], type: 'column' },
         { name: 'Média', data: [], type: 'line' }
       ]
     },
@@ -48,16 +40,8 @@ export default {
     comboChart: {
       labels: [],
       series: [
-        {
-          name: 'Intervalo',
-          data: [],
-          type: 'rangeBar',
-          plotOptions: {
-            bar: {
-              horizontal: false,
-            },
-          },
-        },
+        { name: 'Mínima', data: [], type: 'column' },
+        { name: 'Máxima', data: [], type: 'column' },
         { name: 'Média', data: [], type: 'line' }
       ]
     },
@@ -75,16 +59,8 @@ export default {
     comboChart: {
       labels: [],
       series: [
-        {
-          name: 'Intervalo',
-          data: [],
-          type: 'rangeBar',
-          plotOptions: {
-            bar: {
-              horizontal: false,
-            },
-          },
-        },
+        { name: 'Mínima', data: [], type: 'column' },
+        { name: 'Máxima', data: [], type: 'column' },
         { name: 'Média', data: [], type: 'line' }
       ]
     },
@@ -102,16 +78,8 @@ export default {
     comboChart: {
       labels: [],
       series: [
-        {
-          name: 'Intervalo',
-          data: [],
-          type: 'rangeBar',
-          plotOptions: {
-            bar: {
-              horizontal: false,
-            },
-          },
-        },
+        { name: 'Mínima', data: [], type: 'column' },
+        { name: 'Máxima', data: [], type: 'column' },
         { name: 'Média', data: [], type: 'line' }
       ]
     },

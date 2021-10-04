@@ -126,7 +126,7 @@
 				>
 					<default-history-view
 						v-if="readingsData"
-						:current-view="index"
+						:current-view="index + 1"
 						:data="readingsData[HISTORY_TABS_NAME[index+1]]"
 					/>
 				</v-tab-item>
@@ -139,8 +139,10 @@
 import PageHeader from '../../../core/components/PageHeader.vue';
 import DefaultHistoryView from '../components/DefaultHistoryView.vue';
 import BusService from '../../../services/BusService';
-import { HISTORY_TABS_TITLE, HISTORY_TABS_NAME, TEMPERATURE, HUMIDITY, NOISE, KINETIC } from '../../../core/constants/historyTabs';
+import { HISTORY_TABS_TITLE, HISTORY_TABS_NAME } from '../../../core/constants/historyTabs';
 import ReadingService from '../../../services/ReadingService';
+import { WEEK_DAYS_TEXT } from '../../../core/constants/weekDays';
+import initialReadingData from '../constants/initialReadingsData';
 
 export default {
 	components: {
@@ -158,10 +160,11 @@ export default {
 
 	data() {
 		return {
+			readingsData: initialReadingData,
+			WEEK_DAYS_TEXT,
 			HISTORY_TABS_TITLE,
 			HISTORY_TABS_NAME,
 			busData: null,
-			readingsData: null,
 			showFiltersModal: false,
 			currentTab: null,
 			filters: {
@@ -183,6 +186,7 @@ export default {
 	mounted() {
 		this.getBus();
 		this.getReadings();
+		this.getComboChartData();
 		this.updateReadingsClock = setInterval(this.getLatestReading, 60000);
 	},
 
@@ -277,6 +281,36 @@ export default {
 			}
 		},
 
+		getComboChartData() {
+			ReadingService.getWeekAmounts(this.bus)
+				.then(({ data }) => {
+					const types = ['temperature', 'humidity', 'maxNoise', 'jerk'];
+					for (const i in types) {
+						const type = types[i] !== 'maxNoise' ? types[i] : 'noise';
+						const values = data[types[i]];
+						for (const j in values) {
+							const value = values[j];
+
+							this.readingsData[type].comboChart.labels.push(this.WEEK_DAYS_TEXT[value.weekDay]);
+
+							const min = value.min ?? 0;
+							const max = value.max ?? 0;
+							const mean = value.mean ?? 0;
+
+							this.readingsData[type].comboChart.series[0].data.push(min);
+							this.readingsData[type].comboChart.series[1].data.push(max);
+							this.readingsData[type].comboChart.series[2].data.push(mean);
+
+							// this.readingsData[type].comboChart.series[0].data.push({
+							// 		x: this.WEEK_DAYS_TEXT[value.weekDay],
+							// 		y: [min, max],
+							// 	});
+						}
+					}
+				})
+				.catch(e => console.log(e));
+		},
+
 		getReadings() {
 			const filters = {
 				route: this.filters.route ? this.filters.route._id : null,
@@ -285,57 +319,6 @@ export default {
 
 			ReadingService.getAllByBus(this.bus, { ...filters })
 				.then(({ data }) => {
-					this.readingsData = {
-						temperature: {
-							comfortChart: [0, 0, 0, 0, 0],
-							lineChart: { name: 'Temperatura', data: [] },
-							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
-							unitOfMeasure: this.unitOfMeasure(TEMPERATURE),
-							limits: {
-								max: 50,
-								min: 12,
-								maxComfortable: 27,
-								minComfortable: 19,
-							},
-						},
-						humidity: {
-							comfortChart: [0, 0, 0, 0, 0],
-							lineChart: { name: 'Umidade', data: [] },
-							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
-							unitOfMeasure: this.unitOfMeasure(HUMIDITY),
-							limits: {
-								max: 100,
-								min: 0,
-								maxComfortable: 80,
-								minComfortable: 30,
-							},
-						},
-						noise: {
-							comfortChart: [0, 0, 0, 0, 0],
-							lineChart: { name: 'Ruído', data: [] },
-							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
-							unitOfMeasure: this.unitOfMeasure(NOISE),
-							limits: {
-								max: 120,
-								min: 20,
-								maxComfortable: 80,
-								minComfortable: 20,
-							},
-						},
-						jerk: {
-							comfortChart: [0, 0, 0, 0, 0],
-							lineChart: { name: 'Jerk', data: [] },
-							comboChart: [ { name: 'Máxima', data: [], type: 'column' }, { name: 'Média', data: [], type: 'line' } ],
-							unitOfMeasure: this.unitOfMeasure(KINETIC),
-							limits: {
-								max: 2.0,
-								min: 0.6,
-								maxComfortable: 1.6,
-								minComfortable: 0.6,
-							},
-						},
-					};
-
 					const lastIndex = data.length - 1;
 					this.latestReading = data[lastIndex].id;
 					for (const i in data) {
@@ -346,42 +329,26 @@ export default {
 		},
 
 		pushToFormattedData(reading) {
-			this.readingsData['temperature'].comfortChart[Math.round(parseFloat(reading.thermalComfort)) - 1]++;
-			this.readingsData['humidity'].comfortChart[Math.round(parseFloat(reading.thermalComfort)) - 1]++;
-			this.readingsData['noise'].comfortChart[Math.round(parseFloat(reading.noiseComfort)) - 1]++;
-			this.readingsData['jerk'].comfortChart[Math.round(parseFloat(reading.rideComfort)) - 1]++;
+			const values = {
+				thermalComfort: parseFloat(reading.thermalComfort),
+				noiseComfort: parseFloat(reading.noiseComfort),
+				rideComfort: parseFloat(reading.rideComfort),
+				temperature: parseFloat(reading.temperature),
+				humidity: parseFloat(reading.humidity * 100),
+				noise: parseFloat(reading.maxNoise),
+				jerk: parseFloat(reading.jerk[1]),
+			}
+			this.readingsData['temperature'].comfortChart[Math.round(values.thermalComfort) - 1]++;
+			this.readingsData['humidity'].comfortChart[Math.round(values.thermalComfort) - 1]++;
+			this.readingsData['noise'].comfortChart[Math.round(values.noiseComfort) - 1]++;
+			this.readingsData['jerk'].comfortChart[Math.round(values.rideComfort) - 1]++;
 			
 			const datetime = new Date(reading.gpsDatetime);
 			const formattedTime = `${String((datetime.getHours())).padStart(2, '0')}:${String((datetime.getMinutes())).padStart(2, '0')}`;
-			this.readingsData['temperature'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.temperature) });
-			this.readingsData['humidity'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.humidity*100) });
-			this.readingsData['noise'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.maxNoise) });
-			this.readingsData['jerk'].lineChart.data.push({ x: formattedTime, y: parseFloat(reading.jerk[1]) });
-
-			// combo temporario
-			this.readingsData['temperature'].comboChart[0].data.push(reading.temperature);
-			this.readingsData['humidity'].comboChart[0].data.push(reading.humidity*100);
-			this.readingsData['noise'].comboChart[0].data.push(reading.maxNoise);
-			this.readingsData['jerk'].comboChart[0].data.push(reading.jerk[1]);
-
-			this.readingsData['temperature'].comboChart[1].data.push(reading.temperature);
-			this.readingsData['humidity'].comboChart[1].data.push(reading.humidity*100);
-			this.readingsData['noise'].comboChart[1].data.push(reading.maxNoise);
-			this.readingsData['jerk'].comboChart[1].data.push(reading.jerk[1]);
-		},
-
-		unitOfMeasure(index) {
-			switch(index) {
-			case KINETIC:
-				return 'm/s³';
-			case NOISE:
-				return 'db(A)';
-			case HUMIDITY:
-				return '%';
-			case TEMPERATURE:
-			default:
-				return 'ºC';
-			}
+			this.readingsData['temperature'].lineChart.data.push({ x: formattedTime, y: values.temperature });
+			this.readingsData['humidity'].lineChart.data.push({ x: formattedTime, y: values.humidity });
+			this.readingsData['noise'].lineChart.data.push({ x: formattedTime, y: values.noise });
+			this.readingsData['jerk'].lineChart.data.push({ x: formattedTime, y: values.jerk });
 		},
 
 		handleFilters() {

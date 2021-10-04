@@ -15,11 +15,12 @@
 				<v-card width="620px">
 					<v-card-text>
 						<h4 class="pcs-page-subtitle mb-5">
-							Índices de {{ HISTORY_TABS_TITLE[currentView].toLowerCase() }}
+							Índices semanais de {{ HISTORY_TABS_TITLE[currentView].toLowerCase() }}
 						</h4>
 						<v-row>
 							<v-col cols="12">
-								<apexchart v-if="data" :options="COMBO_CHART_CONFIG" :series="data.comboChart" />
+								<!-- <apexchart v-if="data" :options="RANGE_BAR_CHART_CONFIG" :labels="data.comboChart.labels" :series="[data.comboChart.series[0]]" /> -->
+								<apexchart v-if="data.comboChart" :options="comboChartConfig" :series="data.comboChart.series" />
 							</v-col>
 						</v-row>
 					</v-card-text>
@@ -56,6 +57,7 @@
 <script>
 import OverviewCard from './OverviewCard.vue';
 import COMBO_CHART_CONFIG from '../constants/comboChartConfig';
+import RANGE_BAR_CHART_CONFIG from '../constants/rangeBarChartConfig';
 import { HISTORY_TABS_TITLE, TEMPERATURE, HUMIDITY, NOISE, KINETIC } from '../../../core/constants/historyTabs';
 // import ComfortScale from './ComfortScale.vue';
 
@@ -81,6 +83,11 @@ export default {
 		return {
 			HISTORY_TABS_TITLE,
 			COMBO_CHART_CONFIG,
+			comboChartConfig: {
+				...COMBO_CHART_CONFIG,
+				labels: this.data.comboChart.labels,
+			},
+			RANGE_BAR_CHART_CONFIG,
 			DONUT_CHART_CONFIG: {
 				labels: ['Muito desconforto', 'Desconforto', 'Pouco conforto', 'Conforto', 'Muito conforto'],
 				dataLabels: { enabled: false },
