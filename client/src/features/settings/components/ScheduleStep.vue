@@ -140,9 +140,7 @@
 					>
 						<v-autocomplete
 							v-model="newSchedule.selectedDriver"
-							:loading="loadingDriverOptions"
-							:items="driverOptions"
-							:search-input.sync="searchDriver"
+							:items="drivers"
 							cache-items
 							label="Motorista"
 							placeholder="Selecione..."
@@ -183,9 +181,7 @@
 					>
 						<v-autocomplete
 							v-model="newSchedule.selectedRoute"
-							:loading="loadingRouteOptions"
-							:items="routeOptions"
-							:search-input.sync="searchRoute"
+							:items="routes"
 							cache-items
 							label="Rota"
 							placeholder="Selecione..."
@@ -464,12 +460,8 @@ export default {
 			weekDays: WEEK_DAYS_OPTIONS,
 			searchDriver: null,
 			drivers: [],
-			driverOptions: [],
-			loadingDriverOptions: false,
 			searchRoute: null,
 			routes: [],
-			routeOptions: [],
-			loadingRouteOptions: false,
 			startTimeSelector: false,
 			endTimeSelector: false,
 			schedules: [],
@@ -536,14 +528,6 @@ export default {
 			},
 		},
 
-		searchDriver (newValue) {
-			newValue && newValue !== this.selectedDriver && this.driverQuerySelections(newValue);
-		},
-
-		searchRoute (newValue) {
-			newValue && newValue !== this.selectedRoute && this.routeQuerySelections(newValue);
-		},
-
 		dialogDelete (val) {
 			val || this.closeDelete();
 		},
@@ -580,26 +564,6 @@ export default {
 					}
 				})
 				.catch(e => console.log(e));
-		},
-
-		driverQuerySelections () {
-			this.loadingDriverOptions = true;
-
-			setTimeout(() => {
-				this.driverOptions = this.drivers;
-				this.loadingDriverOptions = false;
-			}, 500)
-		},
-
-		routeQuerySelections (v) {
-			this.loadingRouteOptions = true;
-			// Simulated ajax query
-			setTimeout(() => {
-				this.routeOptions = this.routes.filter(e => {
-					return (e.name || '').toLowerCase().indexOf((v || '').toLowerCase()) > -1;
-				})
-				this.loadingRouteOptions = false;
-			}, 500)
 		},
 
 		addSchedule() {
