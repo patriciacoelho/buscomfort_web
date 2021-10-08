@@ -70,7 +70,7 @@ export default {
 	props: {
 		currentView: {
 			type: Number,
-			default: 0,
+			default: -1,
 		},
 		data: {
 			type: Object,

@@ -4,7 +4,6 @@ import App from './App.vue';
 import vuetify from './plugins/vuetify';
 import router from './core/router';
 
-/* Vue Leaflet */
 import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -31,11 +30,6 @@ Object.keys(allRules).forEach(rule => {
     message: messages[rule],
   });
 });
-
-// extend('required', {
-//   ...required,
-//   message: 'Esse campo é obrigatório'
-// });
 
 Vue.component('apexchart', VueApexCharts);
 Vue.component('ValidationProvider', ValidationProvider);

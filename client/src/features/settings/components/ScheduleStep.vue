@@ -523,7 +523,6 @@ export default {
 
 		schedules: {
 			handler(newValue) {
-				console.log('hi ho');
 				this.$emit('input', { ...this.value, schedules: newValue });
 			},
 		},
