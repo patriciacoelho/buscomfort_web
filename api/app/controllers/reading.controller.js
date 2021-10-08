@@ -97,7 +97,7 @@ exports.findAllByBus = (req, res) => {
     condition = { gpsDatetime: { $gte: new Date(now.getTime() - (24 * 60 * 60 * 1000)) } };
   }
 
-  Reading.find({ bus: req.params.bus, ...condition }, {}, { sort: { 'gpsDatetime' : -1 } })
+  Reading.find({ bus: req.params.bus, ...condition }, {}, { sort: { 'gpsDatetime' : 1 } })
     .then(async (data) => {
       if (!route && !driver) {
         res.send(data);
