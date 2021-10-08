@@ -2,7 +2,7 @@
 	<div class="d-flex" style="min-height: 540px;">
 		<v-col cols="6" class="pl-1">
 			<overview-card
-				:data="data.lineChart"
+				:data="{ ...data.lineChart }"
 				:unit="data.unitOfMeasure"
 				:limits="data.limits"
 				:currentView="currentView"
@@ -19,8 +19,11 @@
 						</h4>
 						<v-row>
 							<v-col cols="12">
-								<!-- <apexchart v-if="data" :options="RANGE_BAR_CHART_CONFIG" :labels="data.comboChart.labels" :series="[data.comboChart.series[0]]" /> -->
-								<apexchart v-if="data.comboChart" :options="comboChartConfig" :series="data.comboChart.series" />
+								<amounts-combo-chart
+									v-if="data.comboChart"
+									:options="comboChartConfig"
+									:series="data.comboChart.series"
+								/>
 							</v-col>
 						</v-row>
 					</v-card-text>
@@ -43,7 +46,7 @@
 									width="350"
 									type="donut"
 									:options="DONUT_CHART_CONFIG"
-									:series="data.comfortChart"
+									:series="[ ...data.comfortChart ]"
 								/>
 							</v-card-text>
 						</v-card>
@@ -60,10 +63,12 @@ import COMBO_CHART_CONFIG from '../constants/comboChartConfig';
 import RANGE_BAR_CHART_CONFIG from '../constants/rangeBarChartConfig';
 import { HISTORY_TABS_TITLE, TEMPERATURE, HUMIDITY, NOISE, KINETIC } from '../../../core/constants/historyTabs';
 // import ComfortScale from './ComfortScale.vue';
+import AmountsComboChart from './AmountsComboChart.vue';
 
 export default {
 	components: {
 		OverviewCard,
+		AmountsComboChart,
 		// ComfortScale,
 	},
 
@@ -83,9 +88,14 @@ export default {
 		return {
 			HISTORY_TABS_TITLE,
 			COMBO_CHART_CONFIG,
+			TEMPERATURE,
+			HUMIDITY,
+			NOISE,
+			KINETIC,
 			comboChartConfig: {
+				...this.comboChartConfig,
 				...COMBO_CHART_CONFIG,
-				labels: this.data.comboChart.labels,
+				...{ labels: this.data.comboChart.labels },
 			},
 			RANGE_BAR_CHART_CONFIG,
 			DONUT_CHART_CONFIG: {

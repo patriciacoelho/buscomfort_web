@@ -14,7 +14,7 @@ const unitOfMeasure = (index) => {
   }
 };
 
-export default {
+export const initialReadingData = {
   temperature: {
     comfortChart: [0, 0, 0, 0, 0],
     lineChart: { name: 'Temperatura', data: [] },

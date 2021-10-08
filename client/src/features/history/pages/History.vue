@@ -142,7 +142,8 @@ import BusService from '../../../services/BusService';
 import { HISTORY_TABS_TITLE, HISTORY_TABS_NAME } from '../../../core/constants/historyTabs';
 import ReadingService from '../../../services/ReadingService';
 import { WEEK_DAYS_TEXT } from '../../../core/constants/weekDays';
-import initialReadingData from '../constants/initialReadingsData';
+import { initialReadingData } from '../constants/initialReadingsData';
+import cloneDeep from 'lodash.clonedeep';
 
 export default {
 	components: {
@@ -160,7 +161,7 @@ export default {
 
 	data() {
 		return {
-			readingsData: initialReadingData,
+			readingsData: cloneDeep(initialReadingData),
 			WEEK_DAYS_TEXT,
 			HISTORY_TABS_TITLE,
 			HISTORY_TABS_NAME,
@@ -291,7 +292,9 @@ export default {
 						for (const j in values) {
 							const value = values[j];
 
-							this.readingsData[type].comboChart.labels.push(this.WEEK_DAYS_TEXT[value.weekDay]);
+							if (this.readingsData[type].comboChart.labels.indexOf(this.WEEK_DAYS_TEXT[value.weekDay]) === -1) {
+								this.readingsData[type].comboChart.labels.push(this.WEEK_DAYS_TEXT[value.weekDay]);
+							}
 
 							const min = value.min ?? 0;
 							const max = value.max ?? 0;
@@ -320,7 +323,10 @@ export default {
 			ReadingService.getAllByBus(this.bus, { ...filters })
 				.then(({ data }) => {
 					const lastIndex = data.length - 1;
-					this.latestReading = data[lastIndex].id;
+					
+					if (lastIndex > -1) {
+						this.latestReading = data[lastIndex].id;
+					}
 					for (const i in data) {
 						this.pushToFormattedData(data[i]);
 					}
