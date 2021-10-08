@@ -10,6 +10,8 @@ const randomId = require('random-id');
 const app = express();
 const PORT = process.env.PORT || 3080;
 
+require('./mqtt');
+
 var corsOptions = {
   origin: [
     'http://localhost:8081',
@@ -53,6 +55,7 @@ app.post('/api/buses', buses.create);
 app.get('/api/buses/list', buses.findAll);
 app.get('/api/buses/grouped-by-status', buses.findAllGroupedByStatus);
 app.get('/api/buses/:id', buses.findOne);
+app.get('/api/buses/by-net-id/:netId', buses.findOneByNetId);
 app.get('/api/buses/:id/current-schedule', buses.findOneWithCurrentSchedule);
 app.put('/api/buses/:id', buses.update);
 
