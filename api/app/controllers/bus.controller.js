@@ -61,6 +61,8 @@ exports.findAllGroupedByStatus = (req, res) => {
         const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => reading.gpsDatetime);
         const elapsedTime = latestReading.gpsDatetime;
         var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
+
+        // BUG - está computado errado esse status
         data[i].status = 'no-signal';
         if (diffMinutes < process.env.TIME_LIMIT) {
           data[i].status = 'watching';
@@ -201,5 +203,27 @@ exports.update = (req, res) => {
       res.status(500).send({
         message: "Error updating Bus with id=" + id
       });
+    });
+};
+
+exports.findOneByNetId = (req, res) => {
+  const netId = req.params.netId;
+  if (!netId) {
+    res.status(400).send({ message: "'netId' parameter is required!" });
+    return;
+  }
+
+  Bus.find({ netId })
+    .then(data => {
+      if (!data) {
+        res.status(404).send({ message: "Not found Bus with netId " + netId });
+        return;
+      }
+
+      res.send(data[0]);
+    })
+    .catch(() => {
+      res.status(500)
+        .send({ message: "Error retrieving Bus with netId=" + netId });
     });
 };
