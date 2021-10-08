@@ -58,7 +58,9 @@ exports.findAllGroupedByStatus = (req, res) => {
     .then(data => {
       const currTime = new Date();
       for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => reading.gpsDatetime);
+        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => {
+          return reading ? reading.gpsDatetime : null;
+        });
         const elapsedTime = latestReading.gpsDatetime;
         var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
 
