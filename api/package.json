@@ -8,9 +8,8 @@
     "build": "webpack",
     "dev": "nodemon ./server.js localhost 3080"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bbachi/vuejs-nginx-docker.git"
+  "engines": {
+    "node": "14.17.5"
   },
   "author": "Patricia Coelho Silva",
   "dependencies": {
