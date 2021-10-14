@@ -36,13 +36,6 @@ exports.create = (req, res) => {
 exports.findAll = (req, res) => {
   Bus.find()
     .then(data => {
-      for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => {
-          return reading ? reading.gpsDatetime : null;
-        });
-
-        data[i].lastShot = latestReading;
-      }
       res.send(data);
     })
     .catch(err => {
@@ -55,24 +48,31 @@ exports.findAll = (req, res) => {
 
 exports.findAllGroupedByStatus = (req, res) => {
   Bus.find()
-    .then(data => {
+    .then(async data => {
       const currTime = new Date();
-      for (i in data) {
-        const latestReading = Reading.findOne({ bus: data[i].id }, {}, { sort: { 'gpsDatetime' : -1 } }).then(reading => {
-          return reading ? reading.gpsDatetime : null;
-        });
-        const elapsedTime = latestReading.gpsDatetime;
-        var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
 
-        // BUG - está computado errado esse status
-        data[i].status = 'no-signal';
-        if (diffMinutes < process.env.TIME_LIMIT) {
-          data[i].status = 'watching';
+      const promises = data.map(async bus => {
+        const latestReading =  await Reading.findOne({ bus: bus.id }, {}, { sort: { 'gpsDatetime' : -1 } });
+
+        let status = 'no-signal';
+        let lastPosition = null;
+        if (latestReading) {
+          lastPosition = latestReading.gpsLocation;
+
+          const elapsedTime = latestReading.gpsDatetime;
+          var diffMinutes = Math.round((((currTime - elapsedTime) % 86400000) % 3600000) / 60000);
+
+          if (diffMinutes < process.env.TIME_LIMIT) {
+            status = 'watching';
+          }
+          // TODO - adicionar status de 'na garagem'
         }
 
-        // TODO - adicionar status de 'na garagem'
-      }
-      const groupedData = groupBy(data, (bus) => bus.status);
+        return { ...bus._doc, status, lastPosition };
+      });
+
+      const buses = await Promise.all(promises);
+      const groupedData = groupBy(buses, (bus) => bus.status);
       res.send(groupedData);
     })
     .catch(err => {
