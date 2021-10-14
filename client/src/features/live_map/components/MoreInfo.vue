@@ -83,7 +83,7 @@
 								cols="3"
 							>
 								<humidity-icon style="height: 40px;" />
-								<p>{{ (latest.humidity * 100) || '--' }} %rH</p>
+								<p>{{ parseInt(latest.humidity * 100) || '--' }} %rH</p>
 							</v-col>
 							<v-col
 								class="text-center"
