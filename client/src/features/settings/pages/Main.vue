@@ -184,6 +184,7 @@ export default {
 						for (const j in data[status]) {
 							this.items.push({
 								...data[status][j],
+								id: data[status][j]._id,
 								status: status,
 							})
 						}
