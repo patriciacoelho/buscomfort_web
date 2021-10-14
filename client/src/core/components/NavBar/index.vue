@@ -62,9 +62,27 @@
 			</v-list>
 
 			<template v-slot:append>
+				<v-list
+					nav
+					dense
+				>
+					<v-list-item-group
+						v-model="activeSimulation"
+						@change="toggleSimulation"
+					>
+						<v-list-item link>
+							<v-list-item-icon>
+								<box-icon :name="simulationIcon" color="#C4C4C4" />
+							</v-list-item-icon>
+							<v-list-item-title class="sidebar__item-title">
+								Simulador: {{ activeSimulation === 0 ? 'on' : 'off' }}
+							</v-list-item-title>
+						</v-list-item>
+					</v-list-item-group>
+				</v-list>
 				<v-list-item class="px-2">
 					<v-list-item-avatar>
-						<v-img src="https://metronethn.com/wp-content/uploads/2016/02/man.png" />
+						<v-img src="/gestor-icon.png" />
 					</v-list-item-avatar>
 					
 					<v-list-item-content>
@@ -78,6 +96,7 @@
 </template>
 
 <script>
+import simulateReadings from '../../utils/simulator';
 import items from './routes';
 
 export default {
@@ -87,6 +106,7 @@ export default {
 			allRoutes: items.main.concat(items.complementary).map(item => item.route),
 			mini: true,
 			activeItem: 0,
+			activeSimulation: false,
 		};
 	},
 
@@ -97,10 +117,20 @@ export default {
 	computed: {
 		floatChevronClass() {
 			return this.mini ? 'float-chevron--condensed' : 'float-chevron--expanded';
-		}
+		},
+
+		simulationIcon() {
+			return this.activeSimulation === 0 ? 'notification' : 'notification-off';
+		},
 	},
 
 	methods: {
+		simulateReadings,
+
+		toggleSimulation(index) {
+			this.simulateReadings(index === 0);
+		},
+
 		iconColor(route) {
 			return this.$route.path === route ? 'white' : '#C4C4C4';
 		},
