@@ -30,8 +30,6 @@ const db = require('./app/models');
 db.mongoose.connect(db.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    // server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
-    // replset: { socketOptions: { keepAlive: 300000, connectTimeoutMS : 30000 } }
   }).then(() => {
     console.log('Connected to the database!');
   }).catch(err => {
@@ -66,7 +64,7 @@ app.get('/api/readings/:bus/latest', readings.findLatestByBus);
 app.get('/api/readings/:bus', readings.findAllByBus);
 app.get('/api/readings/:bus/week-amounts', readings.weekAmounts);
 
-app.get('/', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
