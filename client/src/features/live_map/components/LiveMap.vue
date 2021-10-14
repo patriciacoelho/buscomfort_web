@@ -194,20 +194,23 @@ export default {
 				.then(({ data }) => {
 					for (const status in data) {
 						for (const j in data[status]) {
-							this.markers.push({
-								...data[status][j],
-								position: {
-									lat: -9.413294 + 0.010011*j,
-									lng: -40.512148 + 0.005003*j,
-								},
-								visible: this.showMarkers[status], // se está mostrando os marcadores do status
-								status,
-								icon: icon({
-									iconUrl: `${status}-marker.png`,
-									iconSize: [45, 45],
-									iconAnchor: [16, 37]
-								}),
-							});
+							if (data[status][j].lastPosition) {
+								this.markers.push({
+									...data[status][j],
+									id: data[status][j]._id,
+									position: {
+										lat: parseFloat(data[status][j].lastPosition[0]),
+										lng: parseFloat(data[status][j].lastPosition[1]),
+									},
+									visible: this.showMarkers[status], // se está mostrando os marcadores do status
+									status,
+									icon: icon({
+										iconUrl: `${status}-marker.png`,
+										iconSize: [45, 45],
+										iconAnchor: [16, 37]
+									}),
+								});
+							}
 						}
 					}
 				})
