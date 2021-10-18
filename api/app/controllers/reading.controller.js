@@ -6,6 +6,37 @@ const Schedule = db.schedule;
 exports.create = (req, res) => {
   const reading = new Reading(req.body);
 
+  if (!reading.thermalComfort) {
+    let thermalComfort = 5;
+    if (reading.temperature > 27.5 || reading.temperature < 25) {
+      thermalComfort = 3;
+    }
+    if (reading.temperature > 30.1 || reading.temperature < 22.4) {
+      thermalComfort = 1;
+    }
+    if (thermalComfort > 1 && (reading.humidity < 0.5 || reading.humidity > 0.8)) {
+      thermalComfort--;
+    }
+    reading.thermalComfort = thermalComfort;
+  }
+
+  if (!reading.rideComfort) {
+    let rideComfort = 5;
+    if (reading.jerk[1] > 0.6) {
+      rideComfort = 4;
+    }
+    if (reading.jerk[1] > 0.7) {
+      rideComfort = 3;
+    }
+    if (reading.jerk[1] > 0.8) {
+      rideComfort = 2;
+    }
+    if (reading.jerk[1] > 0.9) {
+      rideComfort = 1;
+    }
+    reading.rideComfort = rideComfort;
+  }
+
   reading
     .save(reading)
     .then(data => {

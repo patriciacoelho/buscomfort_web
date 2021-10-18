@@ -104,10 +104,10 @@ var currentReading = {
   humidity: sensors.humidity.base,
   noise: [sensors.noise.base, sensors.noise.base, sensors.noise.base, sensors.noise.base, sensors.noise.base],
   jerk: [sensors.jerk.base, sensors.jerk.base, sensors.jerk.base],
-  thermalComfort: null,
   noiseComfort: null,
   maxNoise: null,
-  rideComfort: null,
+  // thermalComfort: null,
+  // rideComfort: null,
   bus: null,
 };
 var currentIndex = [0, 20];
@@ -132,8 +132,8 @@ function newReading(busIndex) {
     generateSensorValue('jerk').toFixed(1),
   ];
   currentReading.noiseComfort = computeNoiseComfort();
-  currentReading.thermalComfort = computeThermalComfort();
-  currentReading.rideComfort = computeRideComfort();
+  // currentReading.thermalComfort = computeThermalComfort();
+  // currentReading.rideComfort = computeRideComfort();
   currentReading.bus = busIds[busIndex];
   currentReading.gpsLocation = busIndex ? gpsPoints[currentIndex[busIndex]] : gpsPoints[gpsPoints.length - (currentIndex[busIndex] + 1)];
   currentReading.gpsDatetime = new Date();
