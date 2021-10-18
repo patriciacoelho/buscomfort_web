@@ -89,13 +89,13 @@ function computeNoiseComfort() {
     ) / sum);
 }
 
-function computeThermalComfort() {
-  return Math.floor(Math.random() * (5 - 1)) + 1;
-}
+// function computeThermalComfort() {
+//   return Math.floor(Math.random() * (5 - 1)) + 1;
+// }
 
-function computeRideComfort() {
-  return Math.floor(Math.random() * (5 - 1)) + 1;
-}
+// function computeRideComfort() {
+//   return Math.floor(Math.random() * (5 - 1)) + 1;
+// }
 
 var currentReading = {
   gpsLocation: null,
